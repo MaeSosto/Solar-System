@@ -40,6 +40,47 @@ Node.prototype.updateWorldMatrix = function(parentWorldMatrix) {
   });
 };
 
+var  controls = {
+  D : 300,
+  theta : 1.57,
+  thetaDeg : degToRad(1.57),
+  phi  : 1.57,
+  phiDeg: degToRad(1.57),
+  fovy : 40.0,  // Field-of-view in Y direction angle (in degrees)
+  enable : true,
+  
+}
+
+var  aspect;       // Viewport aspect ratio
+var dr = 5.0 * Math.PI/180.0;
+var mvMatrix, cameraMatrix, pMatrix;
+var mView, mProj;
+var cameraPosition;
+var at = [0, 0, 0];
+var up = [0, 0, 1];
+
+function define_gui(){
+  var gui = new dat.GUI();
+
+  // gui.add(controls,"XcameraAngleRadians").min(-365).max(365).step(1).onChange(function() {
+  //     console.log(controls)});
+  // gui.add(controls,"far").min(1).max(100).step(1).onChange(function() {
+  //     render();});
+  // gui.add(controls,"D").min(0).max(10).step(1).onChange(function() {
+  //     render();});
+  gui.add(controls,"theta").min(0).max(6.28).step(dr).onChange(function() {
+    controls.thetaDeg = radToDeg(controls.theta);
+    console.log("THETA"+controls.thetaDeg);});
+  gui.add(controls,"phi").min(0).max(6.28).step(dr).onChange(function() {
+    controls.phiDeg = radToDeg(controls.phi);
+    console.log("PHI"+controls.phiDeg);});
+  // gui.add(controls,"phi").min(0).max(3.14).step(dr).onChange();
+  // gui.add(controls,"fovy").min(10).max(120).step(5).onChange(function() {
+  //         render();});
+
+  gui.add(controls, "enable")
+}
+
 
 
 function main() {
@@ -50,6 +91,8 @@ function main() {
   if (!gl) {
     return;
   }
+
+  define_gui();
 
   var createFlattenedVertices = function(gl, vertices) {
     var last;
@@ -134,8 +177,6 @@ function main() {
 
 
   //Assegno la gerarchia
-  // moonNode.setParent(earthNode);
-  // earthNode.setParent(sunNode);
   sunNode.setParent(solarSystemNode);
   earthOrbitNode.setParent(solarSystemNode);
   earthNode.setParent(earthOrbitNode);
@@ -176,9 +217,13 @@ function main() {
     var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     var projectionMatrix =
         m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
-
-    // Compute the camera's matrix using look at.
-    var cameraPosition = [0, -200, 0];
+   
+    cameraPosition = [
+      controls.D*Math.sin(controls.phi)*Math.cos(controls.theta), 
+      controls.D*Math.sin(controls.phi)*Math.sin(controls.theta),
+      controls.D*Math.cos(controls.phi)
+  ];
+    
     var target = [0, 0, 0];
     var up = [0, 0, 1];
     var cameraMatrix = m4.lookAt(cameraPosition, target, up);
@@ -189,12 +234,12 @@ function main() {
     var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
 
     //Orbit spin
-    m4.multiply(m4.yRotation(0.01), earthOrbitNode.localMatrix, earthOrbitNode.localMatrix);
-    m4.multiply(m4.yRotation(0.01), moonOrbitNode.localMatrix, moonOrbitNode.localMatrix);
+    m4.multiply(m4.yRotation(-0.01), earthOrbitNode.localMatrix, earthOrbitNode.localMatrix);
+    m4.multiply(m4.yRotation(-0.01), moonOrbitNode.localMatrix, moonOrbitNode.localMatrix);
     //Earth spin
-    m4.multiply(m4.yRotation(0.01), sunNode.localMatrix, sunNode.localMatrix);
+    m4.multiply(m4.yRotation(-0.01), sunNode.localMatrix, sunNode.localMatrix);
     //Earth spin
-    m4.multiply(m4.yRotation(0.05), earthNode.localMatrix, earthNode.localMatrix);
+    m4.multiply(m4.yRotation(-0.05), earthNode.localMatrix, earthNode.localMatrix);
     //Moon spin
     m4.multiply(m4.yRotation(-0.03), moonNode.localMatrix, moonNode.localMatrix);
 
