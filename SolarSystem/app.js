@@ -1,3 +1,5 @@
+var canvas;
+var gl;
 // -------------- GESTIONE DEI NODI ---------------------------------
 //Struttura del nodo 
 var Node = function() {
@@ -83,16 +85,75 @@ function define_gui(){
 
 
 
+
 function main() {
   // Get A WebGL context
   /** @type {HTMLCanvasElement} */
-  var canvas = document.querySelector("#canvas");
-  var gl = canvas.getContext("webgl");
+  canvas = document.querySelector("#canvas");
+  gl = canvas.getContext("webgl");
   if (!gl) {
     return;
   }
 
   define_gui();
+
+
+/*================= Mouse events ======================*/
+
+var AMORTIZATION=0.95;
+var drag=false;
+var old_x, old_y;
+var dX=0, dY=0;
+
+
+var  mouse = {
+  amortization : 0.95,
+  drag : false,
+  old_x : 0,
+  old_y : 0,
+  dX : 0,
+  dY : 0
+}
+
+var mouseDown=function(e) {
+  mouse.drag=true;
+  mouse.old_x=e.pageX, mouse.old_y=e.pageY;
+  e.preventDefault();
+  return false;
+};
+
+var mouseUp=function(e){
+  mouse.drag=false;
+};
+
+var mouseMove=function(e) {
+  if (!mouse.drag) return false; 
+  mouse.dX=(e.pageX-mouse.old_x)*2*Math.PI/canvas.width, 
+  mouse.dY=(e.pageY-mouse.old_y)*2*Math.PI/canvas.height; 
+  controls.theta-=mouse.dX;
+  controls.phi-=mouse.dY;
+  mouse.old_x=e.pageX, mouse.old_y=e.pageY; 
+  e.preventDefault();
+};
+
+var wheelZoom = function(event){
+  //mouseController.wheel(event);
+  if (event.deltaY < 0) {
+    controls.D += 1;
+  } else if (event.deltaY > 0) {
+    controls.D -= 1;
+  }
+  //viewMatrix = m4.identity();
+  //viewMatrix[14]=viewMatrix[14]-D;//zoom
+  event.preventDefault();
+  console.log("mouse ZOOM");
+}
+
+  canvas.onmousedown=mouseDown;
+  canvas.onmouseup=mouseUp;
+  canvas.mouseout=mouseUp;
+  canvas.onmousemove=mouseMove;
+  canvas.addEventListener('wheel', wheelZoom, false);
 
   var createFlattenedVertices = function(gl, vertices) {
     var last;
