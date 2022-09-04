@@ -81,10 +81,15 @@ function main() {
   var objectsToDraw = [];
   var objects = [];
 
-  //NODO DEL SOLE
+  // -------------- CREO IL SISTEMA SOLARE ---------------------------------
+
+  //Solar system
+  var solarSystemNode = new Node();
+  
+  //Sun
   var sunNode = new Node();
   sunNode.localMatrix = m4.translation(0, 0, 0);  // sun a the center
-  sunNode.localMatrix = m4.scale(sunNode.localMatrix, 2, 2, 2);
+  sunNode.localMatrix = m4.scaling(2, 2, 2);
   sunNode.drawInfo = {
     uniforms: {
       u_colorOffset: [0.6, 0.6, 0, 1], // yellow
@@ -94,12 +99,13 @@ function main() {
     bufferInfo: sphereBufferInfo,
   };
 
-  //NODO DELLA TERRA
+  //Earth Orbit
+  var earthOrbitNode = new Node();
+  earthOrbitNode.localMatrix = m4.translation(100, 0, 0);  // earth orbit 100 units from the sun
+
+  //Earth
   var earthNode = new Node();
-  // earth 100 units from the sun
-  earthNode.localMatrix = m4.translation(50, 0, 0);
-  // make the earth twice as large
-  earthNode.localMatrix = m4.scale(earthNode.localMatrix, 0.5, 0.5, 0.5);
+  //earthNode.localMatrix = m4.scaling(2, 2, 2);   // make the earth twice as large
   earthNode.drawInfo = {
     uniforms: {
       u_colorOffset: [1, 1, 1, 1],  // blue-green
@@ -109,10 +115,14 @@ function main() {
     bufferInfo: sphereBufferInfo,
   };
 
-  //NODO DELLA LUNA
+  //Moon Orbit
+  var moonOrbitNode = new Node();
+  moonOrbitNode.localMatrix = m4.translation(20, 0, 0);  // moon 20 units from the earth
+
+  //Moon
   var moonNode = new Node();
-  moonNode.localMatrix = m4.translation(20, 0, 0);  // moon 20 units from the earth
-  moonNode.localMatrix = m4.scale(moonNode.localMatrix, 0.5, 0.5, 0.5);
+  //moonNode.localMatrix = m4.translation(20, 0, 0);  // moon 20 units from the earth
+  moonNode.localMatrix = m4.scaling(0.4, 0.4, 0.4);
   moonNode.drawInfo = {
     uniforms: {
       u_colorOffset: [0.6, 0.6, 0.6, 1],  // gray
@@ -124,8 +134,13 @@ function main() {
 
 
   //Assegno la gerarchia
-  moonNode.setParent(earthNode);
-  earthNode.setParent(sunNode);
+  // moonNode.setParent(earthNode);
+  // earthNode.setParent(sunNode);
+  sunNode.setParent(solarSystemNode);
+  earthOrbitNode.setParent(solarSystemNode);
+  earthNode.setParent(earthOrbitNode);
+  moonOrbitNode.setParent(earthOrbitNode);
+  moonNode.setParent(moonOrbitNode);
 
   var objects = [
     sunNode,
@@ -173,13 +188,19 @@ function main() {
 
     var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
 
-    // update the local matrices for each object.
-    //m4.multiply(m4.yRotation(0.01), sunNode.localMatrix  , sunNode.localMatrix);
-    //m4.multiply(m4.yRotation(0.01), earthNode.localMatrix, earthNode.localMatrix);
-    m4.multiply(m4.yRotation(0.02), moonNode.localMatrix , moonNode.localMatrix);
+    //Orbit spin
+    m4.multiply(m4.yRotation(0.01), earthOrbitNode.localMatrix, earthOrbitNode.localMatrix);
+    m4.multiply(m4.yRotation(0.01), moonOrbitNode.localMatrix, moonOrbitNode.localMatrix);
+    //Earth spin
+    m4.multiply(m4.yRotation(0.01), sunNode.localMatrix, sunNode.localMatrix);
+    //Earth spin
+    m4.multiply(m4.yRotation(0.05), earthNode.localMatrix, earthNode.localMatrix);
+    //Moon spin
+    m4.multiply(m4.yRotation(-0.03), moonNode.localMatrix, moonNode.localMatrix);
 
     // Aggiorno tutte le matrici del grafo a partite dal nodo radice che è il sole
-    sunNode.updateWorldMatrix();
+    //sunNode.updateWorldMatrix();
+    solarSystemNode.updateWorldMatrix();
 
     // Compute all the matrices for rendering
     objects.forEach(function(object) {
