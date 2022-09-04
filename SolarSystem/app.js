@@ -42,15 +42,15 @@ Node.prototype.updateWorldMatrix = function(parentWorldMatrix) {
   });
 };
 
-var  controls = {
+
+
+var camera = {
   D : 300,
-  theta : 1.57,
-  thetaDeg : degToRad(1.57),
-  phi  : 1.57,
-  phiDeg: degToRad(1.57),
-  fovy : 40.0,  // Field-of-view in Y direction angle (in degrees)
-  enable : true,
-  
+  fovy : 40.0,
+  YcameraAngleRadians : degToRad(0),
+  XcameraAngleRadians : degToRad(0),
+  ZcameraAngleRadians : degToRad(0),
+  enable : true
 }
 
 var  aspect;       // Viewport aspect ratio
@@ -63,24 +63,10 @@ var up = [0, 0, 1];
 
 function define_gui(){
   var gui = new dat.GUI();
-
-  // gui.add(controls,"XcameraAngleRadians").min(-365).max(365).step(1).onChange(function() {
-  //     console.log(controls)});
-  // gui.add(controls,"far").min(1).max(100).step(1).onChange(function() {
-  //     render();});
-  // gui.add(controls,"D").min(0).max(10).step(1).onChange(function() {
-  //     render();});
-  gui.add(controls,"theta").min(0).max(6.28).step(dr).onChange(function() {
-    controls.thetaDeg = radToDeg(controls.theta);
-    console.log("THETA"+controls.thetaDeg);});
-  gui.add(controls,"phi").min(0).max(6.28).step(dr).onChange(function() {
-    controls.phiDeg = radToDeg(controls.phi);
-    console.log("PHI"+controls.phiDeg);});
-  // gui.add(controls,"phi").min(0).max(3.14).step(dr).onChange();
-  // gui.add(controls,"fovy").min(10).max(120).step(5).onChange(function() {
-  //         render();});
-
-  gui.add(controls, "enable")
+  gui.add(camera,"YcameraAngleRadians").min(0).max(6.28).step(dr).onChange();
+  gui.add(camera,"XcameraAngleRadians").min(0).max(6.28).step(dr).onChange();
+  gui.add(camera,"ZcameraAngleRadians").min(0).max(6.28).step(dr).onChange();
+  gui.add(camera, "enable")
 }
 
 
@@ -130,8 +116,8 @@ var mouseMove=function(e) {
   if (!mouse.drag) return false; 
   mouse.dX=(e.pageX-mouse.old_x)*2*Math.PI/canvas.width, 
   mouse.dY=(e.pageY-mouse.old_y)*2*Math.PI/canvas.height; 
-  controls.theta-=mouse.dX;
-  controls.phi-=mouse.dY;
+  camera.YcameraAngleRadians-=mouse.dX;
+  camera.XcameraAngleRadians-=mouse.dY;
   mouse.old_x=e.pageX, mouse.old_y=e.pageY; 
   e.preventDefault();
 };
@@ -139,9 +125,9 @@ var mouseMove=function(e) {
 var wheelZoom = function(event){
   //mouseController.wheel(event);
   if (event.deltaY < 0) {
-    controls.D += 1;
+    camera.D += 1;
   } else if (event.deltaY > 0) {
-    controls.D -= 1;
+    camera.D -= 1;
   }
   //viewMatrix = m4.identity();
   //viewMatrix[14]=viewMatrix[14]-D;//zoom
@@ -180,7 +166,7 @@ var wheelZoom = function(event){
 
   var cameraAngleRadians = degToRad(0);
   var fieldOfViewRadians = degToRad(60);
-  var cameraHeight = 50;
+  
 
   var objectsToDraw = [];
   var objects = [];
@@ -276,18 +262,12 @@ var wheelZoom = function(event){
 
     // Compute the projection matrix
     var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-    var projectionMatrix =
-        m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
-   
-    cameraPosition = [
-      controls.D*Math.sin(controls.phi)*Math.cos(controls.theta), 
-      controls.D*Math.sin(controls.phi)*Math.sin(controls.theta),
-      controls.D*Math.cos(controls.phi)
-  ];
-    
-    var target = [0, 0, 0];
-    var up = [0, 0, 1];
-    var cameraMatrix = m4.lookAt(cameraPosition, target, up);
+    var projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
+
+    // Compute a matrix for the camera
+    var cameraMatrix = m4.multiply( m4.xRotation(camera.XcameraAngleRadians), m4.zRotation(camera.ZcameraAngleRadians));
+    cameraMatrix = m4.multiply(cameraMatrix, m4.yRotation(camera.YcameraAngleRadians))
+    cameraMatrix = m4.translate(cameraMatrix, 0, 0, camera.D * 1.5);
 
     // Make a view matrix from the camera matrix.
     var viewMatrix = m4.inverse(cameraMatrix);
