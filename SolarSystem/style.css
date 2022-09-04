@@ -1,0 +1,9 @@
+body {
+  margin: 0;
+}
+canvas {
+  width: 1800px;
+  height: 978px;
+  display: block;
+  background-color: grey;
+}
