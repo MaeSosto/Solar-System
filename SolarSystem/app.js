@@ -46,11 +46,10 @@ Node.prototype.updateWorldMatrix = function(parentWorldMatrix) {
 
 var camera = {
   D : 300,
-  fovy : 40.0,
-  YcameraAngleRadians : degToRad(0),
-  XcameraAngleRadians : degToRad(0),
-  ZcameraAngleRadians : degToRad(0),
-  enable : true
+  fieldOfViewRadians : degToRad(60),
+  YcameraAngleRadians : degToRad(3.14),
+  XcameraAngleRadians : degToRad(3.14),
+  ZcameraAngleRadians : degToRad(3.14),
 }
 
 var  aspect;       // Viewport aspect ratio
@@ -66,13 +65,10 @@ function define_gui(){
   gui.add(camera,"YcameraAngleRadians").min(0).max(6.28).step(dr).onChange();
   gui.add(camera,"XcameraAngleRadians").min(0).max(6.28).step(dr).onChange();
   gui.add(camera,"ZcameraAngleRadians").min(0).max(6.28).step(dr).onChange();
-  gui.add(camera, "enable")
 }
 
-
-
-
-function main() {
+// -------------- MAIN ---------------------------------
+async function main() {
   // Get A WebGL context
   /** @type {HTMLCanvasElement} */
   canvas = document.querySelector("#canvas");
@@ -84,14 +80,9 @@ function main() {
   define_gui();
 
 
+
+
 /*================= Mouse events ======================*/
-
-var AMORTIZATION=0.95;
-var drag=false;
-var old_x, old_y;
-var dX=0, dY=0;
-
-
 var  mouse = {
   amortization : 0.95,
   drag : false,
@@ -123,16 +114,12 @@ var mouseMove=function(e) {
 };
 
 var wheelZoom = function(event){
-  //mouseController.wheel(event);
   if (event.deltaY < 0) {
     camera.D += 1;
   } else if (event.deltaY > 0) {
     camera.D -= 1;
   }
-  //viewMatrix = m4.identity();
-  //viewMatrix[14]=viewMatrix[14]-D;//zoom
   event.preventDefault();
-  console.log("mouse ZOOM");
 }
 
   canvas.onmousedown=mouseDown;
@@ -159,14 +146,13 @@ var wheelZoom = function(event){
       );
   };
 
-  var sphereBufferInfo = createFlattenedVertices(gl, primitives.createSphereVertices(10, 12, 6));
+  const response = await fetch('../obj/sphere.obj');  
+  const text = await response.text();
+  const data = parseOBJ(text);
+  var sphereBufferInfo = webglUtils.createBufferInfoFromArrays(gl, data); //createFlattenedVertices(gl, primitives.createSphereVertices(10, 12, 6));
 
   // setup GLSL program
   var programInfo = webglUtils.createProgramInfo(gl, ["vertex-shader-3d", "fragment-shader-3d"]);
-
-  var cameraAngleRadians = degToRad(0);
-  var fieldOfViewRadians = degToRad(60);
-  
 
   var objectsToDraw = [];
   var objects = [];
@@ -262,7 +248,7 @@ var wheelZoom = function(event){
 
     // Compute the projection matrix
     var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-    var projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
+    var projectionMatrix = m4.perspective(camera.fieldOfViewRadians, aspect, 1, 2000);
 
     // Compute a matrix for the camera
     var cameraMatrix = m4.multiply( m4.xRotation(camera.XcameraAngleRadians), m4.zRotation(camera.ZcameraAngleRadians));

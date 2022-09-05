@@ -1,5 +1,5 @@
 /*
- * Copyright 2012, Gregg Tavares.
+ * Copyright 2021 GFXFundamentals.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
- *     * Neither the name of Gregg Tavares. nor the names of his
+ *     * Neither the name of GFXFundamentals. nor the names of his
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
  *
@@ -53,7 +53,7 @@
 
   if (!isInIFrame()) {
     console.log("%c%s", 'color:blue;font-weight:bold;', 'for more about webgl-utils.js see:');  // eslint-disable-line
-    console.log("%c%s", 'color:blue;font-weight:bold;', 'http://webglfundamentals.org/webgl/lessons/webgl-boilerplate.html');  // eslint-disable-line
+    console.log("%c%s", 'color:blue;font-weight:bold;', 'https://webglfundamentals.org/webgl/lessons/webgl-boilerplate.html');  // eslint-disable-line
   }
 
   /**
@@ -103,7 +103,7 @@
     if (!compiled) {
       // Something went wrong during compilation; get the error
       const lastError = gl.getShaderInfoLog(shader);
-      errFn('*** Error compiling shader \'' + shader + '\':' + lastError);
+      errFn('*** Error compiling shader \'' + shader + '\':' + lastError + `\n` + shaderSource.split('\n').map((l,i) => `${i + 1}: ${l}`).join('\n'));
       gl.deleteShader(shader);
       return null;
     }
@@ -487,14 +487,16 @@
    *        uniforms.
    * @memberOf module:webgl-utils
    */
-  function setUniforms(setters, values) {
+  function setUniforms(setters, ...values) {
     setters = setters.uniformSetters || setters;
-    Object.keys(values).forEach(function(name) {
-      const setter = setters[name];
-      if (setter) {
-        setter(values[name]);
-      }
-    });
+    for (const uniforms of values) {
+      Object.keys(uniforms).forEach(function(name) {
+        const setter = setters[name];
+        if (setter) {
+          setter(uniforms[name]);
+        }
+      });
+    }
   }
 
   /**
@@ -512,10 +514,30 @@
 
     function createAttribSetter(index) {
       return function(b) {
-          gl.bindBuffer(gl.ARRAY_BUFFER, b.buffer);
-          gl.enableVertexAttribArray(index);
-          gl.vertexAttribPointer(
-              index, b.numComponents || b.size, b.type || gl.FLOAT, b.normalize || false, b.stride || 0, b.offset || 0);
+          if (b.value) {
+            gl.disableVertexAttribArray(index);
+            switch (b.value.length) {
+              case 4:
+                gl.vertexAttrib4fv(index, b.value);
+                break;
+              case 3:
+                gl.vertexAttrib3fv(index, b.value);
+                break;
+              case 2:
+                gl.vertexAttrib2fv(index, b.value);
+                break;
+              case 1:
+                gl.vertexAttrib1fv(index, b.value);
+                break;
+              default:
+                throw new Error('the length of a float constant value must be between 1 and 4!');
+            }
+          } else {
+            gl.bindBuffer(gl.ARRAY_BUFFER, b.buffer);
+            gl.enableVertexAttribArray(index);
+            gl.vertexAttribPointer(
+                index, b.numComponents || b.size, b.type || gl.FLOAT, b.normalize || false, b.stride || 0, b.offset || 0);
+          }
         };
     }
 
@@ -967,28 +989,72 @@
     Object.keys(mapping).forEach(function(attribName) {
       const bufferName = mapping[attribName];
       const origArray = arrays[bufferName];
-      const array = makeTypedArray(origArray, bufferName);
-      attribs[attribName] = {
-        buffer:        createBufferFromTypedArray(gl, array),
-        numComponents: origArray.numComponents || array.numComponents || guessNumComponentsFromName(bufferName),
-        type:          getGLTypeForTypedArray(gl, array),
-        normalize:     getNormalizationForTypedArray(array),
-      };
+      if (origArray.value) {
+        attribs[attribName] = {
+          value: origArray.value,
+        };
+      } else {
+        const array = makeTypedArray(origArray, bufferName);
+        attribs[attribName] = {
+          buffer:        createBufferFromTypedArray(gl, array),
+          numComponents: origArray.numComponents || array.numComponents || guessNumComponentsFromName(bufferName),
+          type:          getGLTypeForTypedArray(gl, array),
+          normalize:     getNormalizationForTypedArray(array),
+        };
+      }
     });
     return attribs;
+  }
+
+  function getArray(array) {
+    return array.length ? array : array.data;
+  }
+
+  const texcoordRE = /coord|texture/i;
+  const colorRE = /color|colour/i;
+
+  function guessNumComponentsFromName(name, length) {
+    let numComponents;
+    if (texcoordRE.test(name)) {
+      numComponents = 2;
+    } else if (colorRE.test(name)) {
+      numComponents = 4;
+    } else {
+      numComponents = 3;  // position, normals, indices ...
+    }
+
+    if (length % numComponents > 0) {
+      throw new Error(`Can not guess numComponents for attribute '${name}'. Tried ${numComponents} but ${length} values is not evenly divisible by ${numComponents}. You should specify it.`);
+    }
+
+    return numComponents;
+  }
+
+  function getNumComponents(array, arrayName) {
+    return array.numComponents || array.size || guessNumComponentsFromName(arrayName, getArray(array).length);
   }
 
   /**
    * tries to get the number of elements from a set of arrays.
    */
+  const positionKeys = ['position', 'positions', 'a_position'];
   function getNumElementsFromNonIndexedArrays(arrays) {
-    const key = Object.keys(arrays)[0];
-    const array = arrays[key];
-    if (isArrayBuffer(array)) {
-      return array.numElements;
-    } else {
-      return array.data.length / array.numComponents;
+    let key;
+    for (const k of positionKeys) {
+      if (k in arrays) {
+        key = k;
+        break;
+      }
     }
+    key = key || Object.keys(arrays)[0];
+    const array = arrays[key];
+    const length = getArray(array).length;
+    const numComponents = getNumComponents(array, key);
+    const numElements = length / numComponents;
+    if (length % numComponents > 0) {
+      throw new Error(`numComponents ${numComponents} not correct for length ${length}`);
+    }
+    return numElements;
   }
 
   /**
