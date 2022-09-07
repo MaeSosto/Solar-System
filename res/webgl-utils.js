@@ -1173,7 +1173,7 @@
    *           position: ...,
    *           texcoord: ...,
    *           normal:   ...,
-   *           indices:  ...,
+   *           indices:  ...,createBufferInfoFromArrays
    *        };
    *
    *        let mapping = {

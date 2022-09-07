@@ -18,6 +18,10 @@ function emod(x, n) {
     return x >= 0 ? (x % n) : ((n - (-x % n)) % n);
 }
 
+function isPowerOf2(value) {
+  return (value & (value - 1)) === 0;
+}
+
 function parseOBJ(text) {
     console.log("CONS");
     // because indices are base 1 let's just fill in the 0th data

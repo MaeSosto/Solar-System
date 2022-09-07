@@ -45,7 +45,7 @@ Node.prototype.updateWorldMatrix = function(parentWorldMatrix) {
 
 
 var camera = {
-  D : 300,
+  D : 30,
   fieldOfViewRadians : degToRad(60),
   YcameraAngleRadians : degToRad(3.14),
   XcameraAngleRadians : degToRad(3.14),
@@ -128,28 +128,13 @@ var wheelZoom = function(event){
   canvas.onmousemove=mouseMove;
   canvas.addEventListener('wheel', wheelZoom, false);
 
-  var createFlattenedVertices = function(gl, vertices) {
-    var last;
-    return webglUtils.createBufferInfoFromArrays(
-        gl,
-        primitives.makeRandomVertexColors(
-            primitives.deindexVertices(vertices),
-            {
-              vertsPerColor: 1,
-              rand: function(ndx, channel) {
-                if (channel === 0) {
-                  last = 128 + Math.random() * 128 | 0;
-                }
-                return channel < 3 ? last : 255;
-              }
-            })
-      );
-  };
 
   const response = await fetch('../obj/sphere.obj');  
   const text = await response.text();
   const data = parseOBJ(text);
   var sphereBufferInfo = webglUtils.createBufferInfoFromArrays(gl, data); //createFlattenedVertices(gl, primitives.createSphereVertices(10, 12, 6));
+  
+
 
   // setup GLSL program
   var programInfo = webglUtils.createProgramInfo(gl, ["vertex-shader-3d", "fragment-shader-3d"]);
@@ -168,8 +153,8 @@ var wheelZoom = function(event){
   sunNode.localMatrix = m4.scaling(2, 2, 2);
   sunNode.drawInfo = {
     uniforms: {
-      u_colorOffset: [0.6, 0.6, 0, 1], // yellow
-      u_colorMult:   [0.4, 0.4, 0, 1],
+      u_texture: createTexture("../texture/SunTexture.jpeg"),
+      u_colorMult:   [0.8, 0.5, 0.2, 1],
     },
     programInfo: programInfo,
     bufferInfo: sphereBufferInfo,
@@ -177,14 +162,14 @@ var wheelZoom = function(event){
 
   //Earth Orbit
   var earthOrbitNode = new Node();
-  earthOrbitNode.localMatrix = m4.translation(100, 0, 0);  // earth orbit 100 units from the sun
+  earthOrbitNode.localMatrix = m4.translation(10, 0, 0);  // earth orbit 100 units from the sun
 
   //Earth
   var earthNode = new Node();
   //earthNode.localMatrix = m4.scaling(2, 2, 2);   // make the earth twice as large
   earthNode.drawInfo = {
     uniforms: {
-      u_colorOffset: [1, 1, 1, 1],  // blue-green
+      u_texture: createTexture("../texture/EarthTexture.jpeg"),
       u_colorMult:   [0.8, 0.5, 0.2, 1],
     },
     programInfo: programInfo,
@@ -193,7 +178,7 @@ var wheelZoom = function(event){
 
   //Moon Orbit
   var moonOrbitNode = new Node();
-  moonOrbitNode.localMatrix = m4.translation(20, 0, 0);  // moon 20 units from the earth
+  moonOrbitNode.localMatrix = m4.translation(2, 0, 0);  // moon 20 units from the earth
 
   //Moon
   var moonNode = new Node();
@@ -201,7 +186,7 @@ var wheelZoom = function(event){
   moonNode.localMatrix = m4.scaling(0.4, 0.4, 0.4);
   moonNode.drawInfo = {
     uniforms: {
-      u_colorOffset: [0.6, 0.6, 0.6, 1],  // gray
+      u_texture: createTexture("../texture/MoonTexture.jpg"),
       u_colorMult:   [0.1, 0.1, 0.1, 1],
     },
     programInfo: programInfo,
@@ -227,6 +212,8 @@ var wheelZoom = function(event){
     earthNode.drawInfo,
     moonNode.drawInfo,
   ];
+
+  fixTexture(objects);
 
   requestAnimationFrame(drawScene);
 
@@ -261,14 +248,14 @@ var wheelZoom = function(event){
     var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
 
     //Orbit spin
-    m4.multiply(m4.yRotation(-0.01), earthOrbitNode.localMatrix, earthOrbitNode.localMatrix);
-    m4.multiply(m4.yRotation(-0.01), moonOrbitNode.localMatrix, moonOrbitNode.localMatrix);
+    //m4.multiply(m4.Rotation(-0.01), earthOrbitNode.localMatrix, earthOrbitNode.localMatrix);
+    //m4.multiply(m4.yRotation(-0.01), moonOrbitNode.localMatrix, moonOrbitNode.localMatrix);
     //Earth spin
     m4.multiply(m4.yRotation(-0.01), sunNode.localMatrix, sunNode.localMatrix);
     //Earth spin
-    m4.multiply(m4.yRotation(-0.05), earthNode.localMatrix, earthNode.localMatrix);
+    m4.multiply(m4.yRotation(-0.01), earthNode.localMatrix, earthNode.localMatrix);
     //Moon spin
-    m4.multiply(m4.yRotation(-0.03), moonNode.localMatrix, moonNode.localMatrix);
+    m4.multiply(m4.yRotation(-0.01), moonNode.localMatrix, moonNode.localMatrix);
 
     // Aggiorno tutte le matrici del grafo a partite dal nodo radice che è il sole
     //sunNode.updateWorldMatrix();
