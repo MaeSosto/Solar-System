@@ -248,14 +248,14 @@ var wheelZoom = function(event){
     var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
 
     //Orbit spin
-    //m4.multiply(m4.Rotation(-0.01), earthOrbitNode.localMatrix, earthOrbitNode.localMatrix);
-    //m4.multiply(m4.yRotation(-0.01), moonOrbitNode.localMatrix, moonOrbitNode.localMatrix);
+    m4.multiply(m4.yRotation(-0.01), earthOrbitNode.localMatrix, earthOrbitNode.localMatrix);
+    m4.multiply(m4.yRotation(-0.01), moonOrbitNode.localMatrix, moonOrbitNode.localMatrix);
     //Earth spin
     m4.multiply(m4.yRotation(-0.01), sunNode.localMatrix, sunNode.localMatrix);
     //Earth spin
-    m4.multiply(m4.yRotation(-0.01), earthNode.localMatrix, earthNode.localMatrix);
+    m4.multiply(m4.yRotation(-0.05), earthNode.localMatrix, earthNode.localMatrix);
     //Moon spin
-    m4.multiply(m4.yRotation(-0.01), moonNode.localMatrix, moonNode.localMatrix);
+    m4.multiply(m4.yRotation(-0.03), moonNode.localMatrix, moonNode.localMatrix);
 
     // Aggiorno tutte le matrici del grafo a partite dal nodo radice che è il sole
     //sunNode.updateWorldMatrix();
