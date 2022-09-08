@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Solar System V1.6</title>
+    <title>Solar System V1.7</title>
     <link rel="stylesheet" href="../res/style.css">
     <script type="text/javascript" src="../res/webgl-utils.js"></script>
     <script type="text/javascript" src="../res/m4.js"></script>
@@ -16,10 +16,12 @@
     <script  id="vertex-shader-3d" type="x-shader/x-vertex">
     attribute vec4 a_position;
     attribute vec2 a_texcoord;
+    attribute vec3 a_normal;
 
     uniform mat4 u_matrix;
   
     varying vec2 v_texcoord;
+    varying vec3 v_normal;
 
     void main() {
       // Multiply the position by the matrix.
@@ -27,6 +29,10 @@
 
       // Pass the texcoord to the fragment shader.
       v_texcoord = a_texcoord;
+
+      // orient the normals and pass to the fragment shader
+      v_normal = mat3(u_matrix) * a_normal;
+    
     }
     </script>
     <!-- fragment shader -->
@@ -36,14 +42,20 @@
     // Passed in from the vertex shader.
     varying vec2 v_texcoord;
 
-    uniform vec4 u_colorMult;
-    //uniform vec4 u_colorOffset;
+    varying vec3 v_normal;
+
+    uniform vec4 u_diffuse;
+    uniform vec3 u_lightDirection;
 
     // The texture.
     uniform sampler2D u_texture;
 
     void main() {
-      gl_FragColor = texture2D(u_texture, v_texcoord);
+      
+      vec3 normal = normalize(v_normal);
+      float light = dot(u_lightDirection, normal) * 0.5 + 0.3;
+      
+      gl_FragColor = texture2D(u_texture, v_texcoord) * vec4(u_diffuse.rgb * light, u_diffuse.a);
     }
     </script>
     <script src="app.js"></script>

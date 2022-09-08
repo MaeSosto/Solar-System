@@ -1,7 +1,8 @@
 var canvas;
 var gl;
-// -------------- GESTIONE DEI NODI ---------------------------------
-//Struttura del nodo 
+/** --------------------------------------------------------------------------
+ * GESTIONE DEI NODI
+ * --------------------------------------------------------------------------- */ 
 var Node = function() {
   this.children = [];
   this.localMatrix = m4.identity();
@@ -42,7 +43,16 @@ Node.prototype.updateWorldMatrix = function(parentWorldMatrix) {
   });
 };
 
-
+/** --------------------------------------------------------------------------
+ * GESTIONE DELLA CAMERA
+ * --------------------------------------------------------------------------- */ 
+var  aspect;       // Viewport aspect ratio
+var dr = 5.0 * Math.PI/180.0;
+var mvMatrix, cameraMatrix, pMatrix;
+var mView, mProj;
+var cameraPosition;
+var at = [0, 0, 0];
+var up = [0, 0, 1];
 
 var camera = {
   D : 30,
@@ -52,14 +62,6 @@ var camera = {
   ZcameraAngleRadians : degToRad(3.14),
 }
 
-var  aspect;       // Viewport aspect ratio
-var dr = 5.0 * Math.PI/180.0;
-var mvMatrix, cameraMatrix, pMatrix;
-var mView, mProj;
-var cameraPosition;
-var at = [0, 0, 0];
-var up = [0, 0, 1];
-
 function define_gui(){
   var gui = new dat.GUI();
   gui.add(camera,"YcameraAngleRadians").min(0).max(6.28).step(dr).onChange();
@@ -67,7 +69,9 @@ function define_gui(){
   gui.add(camera,"ZcameraAngleRadians").min(0).max(6.28).step(dr).onChange();
 }
 
-// -------------- MAIN ---------------------------------
+/** --------------------------------------------------------------------------
+ * MAIN FUNCTION
+ * --------------------------------------------------------------------------- */ 
 async function main() {
   // Get A WebGL context
   /** @type {HTMLCanvasElement} */
@@ -79,48 +83,48 @@ async function main() {
 
   define_gui();
 
-
-
-
-/*================= Mouse events ======================*/
-var  mouse = {
-  amortization : 0.95,
-  drag : false,
-  old_x : 0,
-  old_y : 0,
-  dX : 0,
-  dY : 0
-}
-
-var mouseDown=function(e) {
-  mouse.drag=true;
-  mouse.old_x=e.pageX, mouse.old_y=e.pageY;
-  e.preventDefault();
-  return false;
-};
-
-var mouseUp=function(e){
-  mouse.drag=false;
-};
-
-var mouseMove=function(e) {
-  if (!mouse.drag) return false; 
-  mouse.dX=(e.pageX-mouse.old_x)*2*Math.PI/canvas.width, 
-  mouse.dY=(e.pageY-mouse.old_y)*2*Math.PI/canvas.height; 
-  camera.YcameraAngleRadians-=mouse.dX;
-  camera.XcameraAngleRadians-=mouse.dY;
-  mouse.old_x=e.pageX, mouse.old_y=e.pageY; 
-  e.preventDefault();
-};
-
-var wheelZoom = function(event){
-  if (event.deltaY < 0) {
-    camera.D += 1;
-  } else if (event.deltaY > 0) {
-    camera.D -= 1;
+/** --------------------------------------------------------------------------
+ * GESTIONE DEL MOUSE
+ * --------------------------------------------------------------------------- */ 
+  var  mouse = {
+    amortization : 0.95,
+    drag : false,
+    old_x : 0,
+    old_y : 0,
+    dX : 0,
+    dY : 0
   }
-  event.preventDefault();
-}
+
+  var mouseDown=function(e) {
+    mouse.drag=true;
+    mouse.old_x=e.pageX, mouse.old_y=e.pageY;
+    e.preventDefault();
+    return false;
+  };
+
+  var mouseUp=function(e){
+    mouse.drag=false;
+  };
+
+  var mouseMove=function(e) {
+    if (!mouse.drag) return false; 
+    mouse.dX=(e.pageX-mouse.old_x)*2*Math.PI/canvas.width, 
+    mouse.dY=(e.pageY-mouse.old_y)*2*Math.PI/canvas.height; 
+    camera.YcameraAngleRadians-=mouse.dX;
+    camera.XcameraAngleRadians-=mouse.dY;
+    mouse.old_x=e.pageX, mouse.old_y=e.pageY; 
+    e.preventDefault();
+  };
+
+  var wheelZoom = function(event){
+    console.log(event.deltaY);
+    if (event.deltaY < 0) {
+      camera.D += Math.abs(event.deltaY);
+    } else if (event.deltaY > 0) {
+      camera.D -= Math.abs(event.deltaY);
+    }
+    event.preventDefault();
+  }
 
   canvas.onmousedown=mouseDown;
   canvas.onmouseup=mouseUp;
@@ -135,15 +139,15 @@ var wheelZoom = function(event){
   var sphereBufferInfo = webglUtils.createBufferInfoFromArrays(gl, data); //createFlattenedVertices(gl, primitives.createSphereVertices(10, 12, 6));
   
 
-
   // setup GLSL program
   var programInfo = webglUtils.createProgramInfo(gl, ["vertex-shader-3d", "fragment-shader-3d"]);
 
   var objectsToDraw = [];
   var objects = [];
 
-  // -------------- CREO IL SISTEMA SOLARE ---------------------------------
-
+/** --------------------------------------------------------------------------
+ * CREAZIONE DEL SISTEMA SOLARE
+ * --------------------------------------------------------------------------- */ 
   //Solar system
   var solarSystemNode = new Node();
   
@@ -154,7 +158,7 @@ var wheelZoom = function(event){
   sunNode.drawInfo = {
     uniforms: {
       u_texture: createTexture("../texture/SunTexture.jpeg"),
-      u_colorMult:   [0.8, 0.5, 0.2, 1],
+      //u_colorMult:   [0.8, 0.5, 0.2, 1],
     },
     programInfo: programInfo,
     bufferInfo: sphereBufferInfo,
@@ -170,7 +174,7 @@ var wheelZoom = function(event){
   earthNode.drawInfo = {
     uniforms: {
       u_texture: createTexture("../texture/EarthTexture.jpeg"),
-      u_colorMult:   [0.8, 0.5, 0.2, 1],
+      //u_colorMult:   [0.8, 0.5, 0.2, 1],
     },
     programInfo: programInfo,
     bufferInfo: sphereBufferInfo,
@@ -178,7 +182,7 @@ var wheelZoom = function(event){
 
   //Moon Orbit
   var moonOrbitNode = new Node();
-  moonOrbitNode.localMatrix = m4.translation(2, 0, 0);  // moon 20 units from the earth
+  moonOrbitNode.localMatrix = m4.translation(12, 0, 0);  // moon 20 units from the earth
 
   //Moon
   var moonNode = new Node();
@@ -193,12 +197,11 @@ var wheelZoom = function(event){
     bufferInfo: sphereBufferInfo,
   };
 
-
   //Assegno la gerarchia
   sunNode.setParent(solarSystemNode);
   earthOrbitNode.setParent(solarSystemNode);
   earthNode.setParent(earthOrbitNode);
-  moonOrbitNode.setParent(earthOrbitNode);
+  moonOrbitNode.setParent(solarSystemNode);
   moonNode.setParent(moonOrbitNode);
 
   var objects = [
@@ -213,11 +216,13 @@ var wheelZoom = function(event){
     moonNode.drawInfo,
   ];
 
-  fixTexture(objects);
+  //fixTexture(objects);
 
   requestAnimationFrame(drawScene);
 
-  // Draw the scene.
+/** --------------------------------------------------------------------------
+ * ANIMATION FRAME
+ * --------------------------------------------------------------------------- */ 
   function drawScene(time) {
     time *= 0.0005;
 
@@ -244,18 +249,26 @@ var wheelZoom = function(event){
 
     // Make a view matrix from the camera matrix.
     var viewMatrix = m4.inverse(cameraMatrix);
-
+    
     var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
 
+    const sharedUniforms = {
+      u_lightDirection: m4.normalize([50, 0, 0]),
+      u_view: viewMatrix,
+      u_projection: viewProjectionMatrix,
+      u_diffuse: [2, 2, 2, 2]
+    };
+
+
     //Orbit spin
-    m4.multiply(m4.yRotation(-0.01), earthOrbitNode.localMatrix, earthOrbitNode.localMatrix);
-    m4.multiply(m4.yRotation(-0.01), moonOrbitNode.localMatrix, moonOrbitNode.localMatrix);
-    //Earth spin
-    m4.multiply(m4.yRotation(-0.01), sunNode.localMatrix, sunNode.localMatrix);
-    //Earth spin
-    m4.multiply(m4.yRotation(-0.05), earthNode.localMatrix, earthNode.localMatrix);
+    // m4.multiply(m4.yRotation(-0.01), earthOrbitNode.localMatrix, earthOrbitNode.localMatrix);
+    // m4.multiply(m4.yRotation(-0.01), moonOrbitNode.localMatrix, moonOrbitNode.localMatrix);
+    // //Earth spin
+    // m4.multiply(m4.yRotation(-0.01), sunNode.localMatrix, sunNode.localMatrix);
+    // //Earth spin
+    // m4.multiply(m4.yRotation(-0.05), earthNode.localMatrix, earthNode.localMatrix);
     //Moon spin
-    m4.multiply(m4.yRotation(-0.03), moonNode.localMatrix, moonNode.localMatrix);
+    //m4.multiply(m4.yRotation(-0.03), moonNode.localMatrix, moonNode.localMatrix);
 
     // Aggiorno tutte le matrici del grafo a partite dal nodo radice che è il sole
     //sunNode.updateWorldMatrix();
@@ -295,6 +308,10 @@ var wheelZoom = function(event){
 
       // Set the uniforms.
       webglUtils.setUniforms(programInfo, object.uniforms);
+
+      // calls gl.uniform
+      webglUtils.setUniforms(programInfo, sharedUniforms);
+    
 
       // Draw
       gl.drawArrays(gl.TRIANGLES, 0, bufferInfo.numElements);
