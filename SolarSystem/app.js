@@ -1,73 +1,5 @@
 var canvas;
 var gl;
-/** --------------------------------------------------------------------------
- * GESTIONE DEI NODI
- * --------------------------------------------------------------------------- */ 
-var Node = function() {
-  this.children = [];
-  this.localMatrix = m4.identity();
-  this.worldMatrix = m4.identity();
-};
-
-Node.prototype.setParent = function(parent) {
-  //ci scolleghiamo dal nostro vecchio parent 
-  if (this.parent) {
-    var ndx = this.parent.children.indexOf(this);
-    if (ndx >= 0) {
-      this.parent.children.splice(ndx, 1);
-    }
-  }
-
-  //Ci aggiungiamo al nuovo parent
-  if (parent) {
-    parent.children.push(this);
-  }
-  this.parent = parent;
-};
-
-//funzione ricorsiva che moltiplica tutti i sottonodi del parentWolrdMatrix 
-Node.prototype.updateWorldMatrix = function(parentWorldMatrix) {
-  if (parentWorldMatrix) {
-    //Ho passato la matrice del parent
-    //quindi moltiplico parentWorldMatrix con la localMatrix e la metto in worldMatrix
-    m4.multiply(parentWorldMatrix, this.localMatrix, this.worldMatrix);
-  } else {
-    // Non ho passato nessuna matrice del parent quindi copio la localMatrix in worldMatrix
-    m4.copy(this.localMatrix, this.worldMatrix);
-  }
-
-  //Per ogni figlio faccio la ricorsione
-  var worldMatrix = this.worldMatrix;
-  this.children.forEach(function(child) {
-    child.updateWorldMatrix(worldMatrix);
-  });
-};
-
-/** --------------------------------------------------------------------------
- * GESTIONE DELLA CAMERA
- * --------------------------------------------------------------------------- */ 
-var  aspect;       // Viewport aspect ratio
-var dr = 5.0 * Math.PI/180.0;
-var mvMatrix, cameraMatrix, pMatrix;
-var mView, mProj;
-var cameraPosition;
-var at = [0, 0, 0];
-var up = [0, 0, 1];
-
-var camera = {
-  D : 30,
-  fieldOfViewRadians : degToRad(60),
-  YcameraAngleRadians : degToRad(3.14),
-  XcameraAngleRadians : degToRad(3.14),
-  ZcameraAngleRadians : degToRad(3.14),
-}
-
-function define_gui(){
-  var gui = new dat.GUI();
-  gui.add(camera,"YcameraAngleRadians").min(0).max(6.28).step(dr).onChange();
-  gui.add(camera,"XcameraAngleRadians").min(0).max(6.28).step(dr).onChange();
-  gui.add(camera,"ZcameraAngleRadians").min(0).max(6.28).step(dr).onChange();
-}
 
 /** --------------------------------------------------------------------------
  * MAIN FUNCTION
@@ -83,140 +15,329 @@ async function main() {
 
   define_gui();
 
-/** --------------------------------------------------------------------------
- * GESTIONE DEL MOUSE
- * --------------------------------------------------------------------------- */ 
-  var  mouse = {
-    amortization : 0.95,
-    drag : false,
-    old_x : 0,
-    old_y : 0,
-    dX : 0,
-    dY : 0
-  }
+  //Imposto le funzionalità del mouse
+  mouseSettings(canvas);
 
-  var mouseDown=function(e) {
-    mouse.drag=true;
-    mouse.old_x=e.pageX, mouse.old_y=e.pageY;
-    e.preventDefault();
-    return false;
-  };
-
-  var mouseUp=function(e){
-    mouse.drag=false;
-  };
-
-  var mouseMove=function(e) {
-    if (!mouse.drag) return false; 
-    mouse.dX=(e.pageX-mouse.old_x)*2*Math.PI/canvas.width, 
-    mouse.dY=(e.pageY-mouse.old_y)*2*Math.PI/canvas.height; 
-    camera.YcameraAngleRadians-=mouse.dX;
-    camera.XcameraAngleRadians-=mouse.dY;
-    mouse.old_x=e.pageX, mouse.old_y=e.pageY; 
-    e.preventDefault();
-  };
-
-  var wheelZoom = function(event){
-    console.log(event.deltaY);
-    if (event.deltaY < 0) {
-      camera.D += Math.abs(event.deltaY);
-    } else if (event.deltaY > 0) {
-      camera.D -= Math.abs(event.deltaY);
-    }
-    event.preventDefault();
-  }
-
-  canvas.onmousedown=mouseDown;
-  canvas.onmouseup=mouseUp;
-  canvas.mouseout=mouseUp;
-  canvas.onmousemove=mouseMove;
-  canvas.addEventListener('wheel', wheelZoom, false);
-
-
-  const response = await fetch('../obj/sphere.obj');  
-  const text = await response.text();
-  const data = parseOBJ(text);
-  var sphereBufferInfo = webglUtils.createBufferInfoFromArrays(gl, data); //createFlattenedVertices(gl, primitives.createSphereVertices(10, 12, 6));
+  //Carica le informazioni degli oggetti nei buffer
+  var sphereBufferInfo = await getSphereBufferInfo(gl); //webglUtils.createBufferInfoFromArrays(gl, dataSphere); 
+  var orbitBufferInfo = await getOrbitBufferInfo(gl);
   
-
   // setup GLSL program
   var programInfo = webglUtils.createProgramInfo(gl, ["vertex-shader-3d", "fragment-shader-3d"]);
 
-  var objectsToDraw = [];
   var objects = [];
 
 /** --------------------------------------------------------------------------
  * CREAZIONE DEL SISTEMA SOLARE
  * --------------------------------------------------------------------------- */ 
-  //Solar system
-  var solarSystemNode = new Node();
-  
-  //Sun
-  var sunNode = new Node();
-  sunNode.localMatrix = m4.translation(0, 0, 0);  // sun a the center
-  sunNode.localMatrix = m4.scaling(2, 2, 2);
-  sunNode.drawInfo = {
-    uniforms: {
-      u_texture: createTexture("../texture/SunTexture.jpeg"),
-      //u_colorMult:   [0.8, 0.5, 0.2, 1],
-    },
-    programInfo: programInfo,
-    bufferInfo: sphereBufferInfo,
-  };
+  {
+    //Solar system
+    var solarSystemNode = new Node();
+    
+    //Sun
+    var sunSphere = new Node();
+    sunSphere.localMatrix = m4.translation(0, 0, 0);  // sun a the center
+    sunSphere.localMatrix = m4.scaling(116, 116, 116);
+    sunSphere.drawInfo = {
+      uniforms: {
+        u_texture: createTexture("../texture/SunTexture.jpg"),
+        //u_colorMult:   [0.8, 0.5, 0.2, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: sphereBufferInfo,
+    };
 
-  //Earth Orbit
-  var earthOrbitNode = new Node();
-  earthOrbitNode.localMatrix = m4.translation(10, 0, 0);  // earth orbit 100 units from the sun
+    //Mercury Node
+    var mercuryOrbitNode = new Node();
+    mercuryOrbitNode.localMatrix = m4.translation(126, 0, 0); 
 
-  //Earth
-  var earthNode = new Node();
-  //earthNode.localMatrix = m4.scaling(2, 2, 2);   // make the earth twice as large
-  earthNode.drawInfo = {
-    uniforms: {
-      u_texture: createTexture("../texture/EarthTexture.jpeg"),
-      //u_colorMult:   [0.8, 0.5, 0.2, 1],
-    },
-    programInfo: programInfo,
-    bufferInfo: sphereBufferInfo,
-  };
+    //Mercury
+    var mercurySphere = new Node();
+    mercurySphere.localMatrix = m4.scaling(0.5, 0.5, 0.5);
+    mercurySphere.drawInfo = {
+      uniforms: {
+        u_texture: createTexture("../texture/Mercurytexture.jpg"),
+        //u_colorMult:   [0.8, 0.5, 0.2, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: sphereBufferInfo,
+    };
 
-  //Moon Orbit
-  var moonOrbitNode = new Node();
-  moonOrbitNode.localMatrix = m4.translation(12, 0, 0);  // moon 20 units from the earth
+    //Mercury Orbit
+    var mercuryOrbit = new Node();
+    mercuryOrbit.localMatrix = m4.scaling(1, 1, 1);   // make the earth twice as large
+    mercuryOrbit.drawInfo = {
+      uniforms: {
+        u_texture: createTexture("../texture/yellow.jpg"),
+        u_colorMult:   [0.8, 0.5, 0.2, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: orbitBufferInfo,
+    };
 
-  //Moon
-  var moonNode = new Node();
-  //moonNode.localMatrix = m4.translation(20, 0, 0);  // moon 20 units from the earth
-  moonNode.localMatrix = m4.scaling(0.4, 0.4, 0.4);
-  moonNode.drawInfo = {
-    uniforms: {
-      u_texture: createTexture("../texture/MoonTexture.jpg"),
-      u_colorMult:   [0.1, 0.1, 0.1, 1],
-    },
-    programInfo: programInfo,
-    bufferInfo: sphereBufferInfo,
-  };
+    //Venus Node
+    var venusOrbitNode = new Node();
+    venusOrbitNode.localMatrix = m4.translation(135, 0, 0); 
 
-  //Assegno la gerarchia
-  sunNode.setParent(solarSystemNode);
-  earthOrbitNode.setParent(solarSystemNode);
-  earthNode.setParent(earthOrbitNode);
-  moonOrbitNode.setParent(solarSystemNode);
-  moonNode.setParent(moonOrbitNode);
+    //Venus
+    var venusSphere = new Node();
+    venusSphere.drawInfo = {
+      uniforms: {
+        u_texture: createTexture("../texture/VenusTexture.jpg"),
+        //u_colorMult:   [0.8, 0.5, 0.2, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: sphereBufferInfo,
+    };
 
-  var objects = [
-    sunNode,
-    earthNode,
-    moonNode,
-  ];
+    //Venus Orbit
+    var venusOrbit = new Node();
+    venusOrbit.localMatrix = m4.scaling(1.07, 1.07, 1.07);   // make the earth twice as large
+    venusOrbit.drawInfo = {
+      uniforms: {
+        u_texture: createTexture("../texture/yellow.jpg"),
+        u_colorMult:   [0.8, 0.5, 0.2, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: orbitBufferInfo,
+    };
 
-  var objectsToDraw = [
-    sunNode.drawInfo,
-    earthNode.drawInfo,
-    moonNode.drawInfo,
-  ];
+    //Earth Node
+    var earthOrbitNode = new Node();
+    earthOrbitNode.localMatrix = m4.translation(141, 0, 0);  // earth orbit 100 units from the sun
 
-  //fixTexture(objects);
+    //Earth
+    var earthSphere = new Node();
+    //earthNode.localMatrix = m4.scaling(2, 2, 2);   // make the earth twice as large
+    earthSphere.drawInfo = {
+      uniforms: {
+        u_texture: createTexture("../texture/EarthTexture.jpg"),
+        //u_colorMult:   [0.8, 0.5, 0.2, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: sphereBufferInfo,
+    };
+
+    //Earth Orbit
+    var earthOrbit = new Node();
+    earthOrbit.localMatrix = m4.scaling(1.12, 1.12, 1.12);   // make the earth twice as large
+    earthOrbit.drawInfo = {
+      uniforms: {
+        u_texture: createTexture("../texture/yellow.jpg"),
+        u_colorMult:   [0.8, 0.5, 0.2, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: orbitBufferInfo,
+    };
+
+    //Moon Orbit
+    var moonOrbitNode = new Node();
+    moonOrbitNode.localMatrix = m4.translation(1.23, 0, 0);  // moon 20 units from the earth
+
+    //Moon
+    var moonSphere = new Node();
+    //moonNode.localMatrix = m4.translation(20, 0, 0);  // moon 20 units from the earth
+    moonSphere.localMatrix = m4.scaling(0.16, 0.16, 0.16);
+    moonSphere.drawInfo = {
+      uniforms: {
+        u_texture: createTexture("../texture/MoonTexture.jpg"),
+        u_colorMult:   [0.1, 0.1, 0.1, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: sphereBufferInfo,
+    };
+
+    //Mars Node
+    var marsOrbitNode = new Node();
+    marsOrbitNode.localMatrix = m4.translation(154.3, 0, 0); 
+
+    //Mars
+    var marsSphere = new Node();
+    marsSphere.localMatrix = m4.scaling(0.5, 0.5, 0.5);   
+    marsSphere.drawInfo = {
+      uniforms: {
+        u_texture: createTexture("../texture/MarsTexture.jpg"),
+        //u_colorMult:   [0.8, 0.5, 0.2, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: sphereBufferInfo,
+    };
+
+    //Mars Orbit
+    var marsOrbit = new Node();
+    marsOrbit.localMatrix = m4.scaling(1.22, 1.22, 1.22);   // make the earth twice as large
+    marsOrbit.drawInfo = {
+      uniforms: {
+        u_texture: createTexture("../texture/yellow.jpg"),
+        u_colorMult:   [0.8, 0.5, 0.2, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: orbitBufferInfo,
+    };
+
+    //Jupiter Node
+    var jupiterOrbitNode = new Node();
+    jupiterOrbitNode.localMatrix = m4.translation(257, 0, 0); 
+
+    //Jupiter
+    var jupiterSphere = new Node();
+    jupiterSphere.localMatrix = m4.scaling(11.5, 11.5, 11.5);   
+    jupiterSphere.drawInfo = {
+      uniforms: {
+        u_texture: createTexture("../texture/JupiterTexture.jpg"),
+        //u_colorMult:   [0.8, 0.5, 0.2, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: sphereBufferInfo,
+    };
+
+    //Jupiter Orbit
+    var jupiterOrbit = new Node();
+    jupiterOrbit.localMatrix = m4.scaling(2.04, 2.04, 2.04);   // make the earth twice as large
+    jupiterOrbit.drawInfo = {
+      uniforms: {
+        u_texture: createTexture("../texture/yellow.jpg"),
+        u_colorMult:   [0.8, 0.5, 0.2, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: orbitBufferInfo,
+    };
+
+    //Saturn Node
+    var saturnOrbitNode = new Node();
+    saturnOrbitNode.localMatrix = m4.translation(363.3, 0, 0); 
+
+    //Saturn
+    var saturnSphere = new Node();
+    saturnSphere.localMatrix = m4.scaling(9.6, 9.6, 9.6);   
+    saturnSphere.drawInfo = {
+      uniforms: {
+        u_texture: createTexture("../texture/SaturnTexture.jpg"),
+        //u_colorMult:   [0.8, 0.5, 0.2, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: sphereBufferInfo,
+    };
+
+    //Uranus Orbit
+    var uranusOrbit = new Node();
+    uranusOrbit.localMatrix = m4.scaling(2.88, 2.88, 2.88);   // make the earth twice as large
+    uranusOrbit.drawInfo = {
+      uniforms: {
+        u_texture: createTexture("../texture/yellow.jpg"),
+        u_colorMult:   [0.8, 0.5, 0.2, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: orbitBufferInfo,
+    };
+
+    //Uranus Node
+    var uranusOrbitNode = new Node();
+    uranusOrbitNode.localMatrix = m4.translation(598.5, 0, 0); 
+
+    //Uranus
+    var uranusSphere = new Node();
+    uranusSphere.localMatrix = m4.scaling(4.1, 4.1, 4.1);   
+    uranusSphere.drawInfo = {
+      uniforms: {
+        u_texture: createTexture("../texture/UranusTexture.jpg"),
+        //u_colorMult:   [0.8, 0.5, 0.2, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: sphereBufferInfo,
+    };
+
+    //Uranus Orbit
+    var saturnOrbit = new Node();
+    saturnOrbit.localMatrix = m4.scaling(4.75, 4.75, 4.75);   // make the earth twice as large
+    saturnOrbit.drawInfo = {
+      uniforms: {
+        u_texture: createTexture("../texture/yellow.jpg"),
+        u_colorMult:   [0.8, 0.5, 0.2, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: orbitBufferInfo,
+    };
+
+    //Neptune Node
+    var neptuneOrbitNode = new Node();
+    neptuneOrbitNode.localMatrix = m4.translation(869.6, 0, 0); 
+
+    //Neptune
+    var neptuneSphere = new Node();
+    neptuneSphere.localMatrix = m4.scaling(4, 4, 4);   
+    neptuneSphere.drawInfo = {
+      uniforms: {
+        u_texture: createTexture("../texture/NeptuneTexture.jpg"),
+        //u_colorMult:   [0.8, 0.5, 0.2, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: sphereBufferInfo,
+    };
+
+    //Neptune Orbit
+    var neptuneOrbit = new Node();
+    neptuneOrbit.localMatrix = m4.scaling(6.90, 6.90, 6.90);   // make the earth twice as large
+    neptuneOrbit.drawInfo = {
+      uniforms: {
+        u_texture: createTexture("../texture/yellow.jpg"),
+        u_colorMult:   [0.8, 0.5, 0.2, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: orbitBufferInfo,
+    };
+
+    //Assegno la gerarchia
+    sunSphere.setParent(solarSystemNode);
+    mercuryOrbitNode.setParent(solarSystemNode);
+    mercurySphere.setParent(mercuryOrbitNode);
+    mercuryOrbit.setParent(solarSystemNode);
+    venusOrbitNode.setParent(solarSystemNode);
+    venusSphere.setParent(venusOrbitNode);
+    venusOrbit.setParent(solarSystemNode);
+    earthOrbitNode.setParent(solarSystemNode);
+    earthSphere.setParent(earthOrbitNode);
+    earthOrbit.setParent(solarSystemNode);
+    moonOrbitNode.setParent(earthOrbitNode);
+    moonSphere.setParent(moonOrbitNode);
+    marsOrbitNode.setParent(solarSystemNode);
+    marsSphere.setParent(marsOrbitNode);
+    marsOrbit.setParent(solarSystemNode);
+    jupiterOrbitNode.setParent(solarSystemNode);
+    jupiterSphere.setParent(jupiterOrbitNode);
+    jupiterOrbit.setParent(solarSystemNode);
+    saturnOrbitNode.setParent(solarSystemNode);
+    saturnSphere.setParent(saturnOrbitNode);
+    saturnOrbit.setParent(solarSystemNode);
+    uranusOrbitNode.setParent(solarSystemNode);
+    uranusSphere.setParent(uranusOrbitNode);
+    uranusOrbit.setParent(solarSystemNode);
+    neptuneOrbitNode.setParent(solarSystemNode);
+    neptuneSphere.setParent(neptuneOrbitNode);
+    neptuneOrbit.setParent(solarSystemNode);
+    
+
+    var objects = [
+      sunSphere,
+      mercurySphere,
+      mercuryOrbit,
+      venusSphere,
+      venusOrbit,
+      earthSphere,
+      earthOrbit,
+      moonSphere,
+      marsOrbit,
+      marsSphere,
+      jupiterSphere,
+      jupiterOrbit,
+      saturnSphere,
+      saturnOrbit,
+      uranusSphere,
+      uranusOrbit,
+      neptuneSphere,
+      neptuneOrbit,
+    ];
+  }
 
   requestAnimationFrame(drawScene);
 
@@ -260,15 +381,15 @@ async function main() {
     };
 
 
-    //Orbit spin
-    // m4.multiply(m4.yRotation(-0.01), earthOrbitNode.localMatrix, earthOrbitNode.localMatrix);
-    // m4.multiply(m4.yRotation(-0.01), moonOrbitNode.localMatrix, moonOrbitNode.localMatrix);
+    // //Orbit spin
+    // m4.multiply(m4.yRotation(-0.001), earthOrbitNode.localMatrix, earthOrbitNode.localMatrix);
+    // m4.multiply(m4.yRotation(-0.001), moonOrbitNode.localMatrix, moonOrbitNode.localMatrix);
+    // //Sun spin
+    // m4.multiply(m4.yRotation(-0.001), sunSphere.localMatrix, sunSphere.localMatrix);
     // //Earth spin
-    // m4.multiply(m4.yRotation(-0.01), sunNode.localMatrix, sunNode.localMatrix);
-    // //Earth spin
-    // m4.multiply(m4.yRotation(-0.05), earthNode.localMatrix, earthNode.localMatrix);
-    //Moon spin
-    //m4.multiply(m4.yRotation(-0.03), moonNode.localMatrix, moonNode.localMatrix);
+    // m4.multiply(m4.yRotation(-0.05), earthSphere.localMatrix, earthSphere.localMatrix);
+    // //Moon spin
+    // m4.multiply(m4.yRotation(-0.03), moonNode.localMatrix, moonNode.localMatrix);
 
     // Aggiorno tutte le matrici del grafo a partite dal nodo radice che è il sole
     //sunNode.updateWorldMatrix();
@@ -284,37 +405,32 @@ async function main() {
     var lastUsedProgramInfo = null;
     var lastUsedBufferInfo = null;
 
-    objectsToDraw.forEach(function(object) {
-      var programInfo = object.programInfo;
-      var bufferInfo = object.bufferInfo;
+    objects.forEach(function(object){
+      var programInfo = object.drawInfo.programInfo;
+      var bufferInfo = object.drawInfo.bufferInfo;
       var bindBuffers = false;
-
-      if (programInfo !== lastUsedProgramInfo) {
-        lastUsedProgramInfo = programInfo;
-        gl.useProgram(programInfo.program);
-
-        // We have to rebind buffers when changing programs because we
-        // only bind buffers the program uses. So if 2 programs use the same
-        // bufferInfo but the 1st one uses only positions the when the
-        // we switch to the 2nd one some of the attributes will not be on.
-        bindBuffers = true;
-      }
-
+      
       // Setup all the needed attributes.
       if (bindBuffers || bufferInfo !== lastUsedBufferInfo) {
         lastUsedBufferInfo = bufferInfo;
         webglUtils.setBuffersAndAttributes(gl, programInfo, bufferInfo);
+      
+        if (programInfo !== lastUsedProgramInfo) {
+          lastUsedProgramInfo = programInfo;
+          gl.useProgram(programInfo.program);
+          bindBuffers = true;
+        }
       }
 
-      // Set the uniforms.
-      webglUtils.setUniforms(programInfo, object.uniforms);
+       // Set the uniforms.
+       webglUtils.setUniforms(programInfo, object.drawInfo.uniforms);
 
-      // calls gl.uniform
-      webglUtils.setUniforms(programInfo, sharedUniforms);
-    
-
-      // Draw
-      gl.drawArrays(gl.TRIANGLES, 0, bufferInfo.numElements);
+       // calls gl.uniform
+       webglUtils.setUniforms(programInfo, sharedUniforms);
+     
+ 
+       // Draw
+       gl.drawArrays(gl.TRIANGLES, 0, bufferInfo.numElements);
     });
 
     requestAnimationFrame(drawScene);
