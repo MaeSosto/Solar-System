@@ -140,3 +140,4 @@ async function getOrbitBufferInfo(gl){
   const dataOrbit = parseOBJ(textOrbit);
   return webglUtils.createBufferInfoFromArrays(gl, dataOrbit); 
 }
+
