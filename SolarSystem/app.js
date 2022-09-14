@@ -16,24 +16,30 @@ async function main() {
   define_gui();
 
   //Imposto le funzionalità del mouse
-  mouseSettings(canvas);
+  controlsSettings(canvas);
 
   //Carica le informazioni degli oggetti nei buffer
-  var sphereBufferInfo = await getSphereBufferInfo(gl); //webglUtils.createBufferInfoFromArrays(gl, dataSphere); 
-  var orbitBufferInfo = await getOrbitBufferInfo(gl);
-  
+  const sphereBufferInfo = await getSphereBufferInfo(gl); //webglUtils.createBufferInfoFromArrays(gl, dataSphere); 
+  const orbitBufferInfo = await getOrbitBufferInfo(gl);
+  const quadBufferInfo = primitives.createXYQuadBufferInfo(gl);
+
   // setup GLSL program
-  var programInfo = webglUtils.createProgramInfo(gl, ["vertex-shader-3d", "fragment-shader-3d"]);
+  const programInfo = webglUtils.createProgramInfo(gl, ["vertex-shader-3d", "fragment-shader-3d"]);
+  const skyboxProgramInfo = webglUtils.createProgramInfo(gl, ["skybox-vertex-shader", "skybox-fragment-shader"]);
+
+  //Imposto la texture per lo skybox
+  const skyboxTexture = createSkyboxTexture();
 
   //Creazione del sistema solare
-  var objects = [];
+  var planets = [];
   var orbits =[];
+
   //Solar system node
-  var solarSystemNode = new Node();
-
-  createSolarSystem(objects, orbits, programInfo, sphereBufferInfo,orbitBufferInfo, solarSystemNode);
-  setOrbits(objects, programInfo, orbitBufferInfo, solarSystemNode);
-
+  const solarSystemNode = new Node();
+  createSolarSystem(planets, orbits, programInfo, sphereBufferInfo, solarSystemNode);
+  const orbitsCircle = setOrbits(programInfo, orbitBufferInfo, solarSystemNode);
+  planets = planets.concat(orbitsCircle);
+ 
   requestAnimationFrame(drawScene);
 
 /** --------------------------------------------------------------------------
@@ -68,31 +74,41 @@ async function main() {
     
     var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
 
+    var viewDirectionMatrix = m4.copy(viewMatrix);
+    viewDirectionMatrix[12] = 0;
+    viewDirectionMatrix[13] = 0;
+    viewDirectionMatrix[14] = 0;
+
+    var viewDirectionProjectionMatrix = m4.multiply(projectionMatrix, viewDirectionMatrix);
+    var viewDirectionProjectionInverseMatrix = m4.inverse(viewDirectionProjectionMatrix);
+
+
+    //Disegno lo skybox
+    // let our quad pass the depth test at 1.0
+    gl.depthFunc(gl.LEQUAL);
+    gl.useProgram(skyboxProgramInfo.program);
+    webglUtils.setBuffersAndAttributes(gl, skyboxProgramInfo, quadBufferInfo);
+    webglUtils.setUniforms(skyboxProgramInfo, {u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix, u_skybox: skyboxTexture,});
+    webglUtils.drawBufferInfo(gl, quadBufferInfo);
+
     const sharedUniforms = {
       u_lightDirection: m4.normalize([50, 0, 0]),
       u_view: viewMatrix,
       u_projection: viewProjectionMatrix,
       u_diffuse: [2, 2, 2, 2]
     };
-
     
-
-    // //Orbit spin
-    //m4.multiply(m4.yRotation(earthOrbitNode.drawInfo.rotation), earthOrbitNode.localMatrix, earthOrbitNode.localMatrix);
-    // m4.multiply(m4.yRotation(-0.001), moonOrbitNode.localMatrix, moonOrbitNode.localMatrix);
-    // //Sun spin
-    // m4.multiply(m4.yRotation(-0.001), sunSphere.localMatrix, sunSphere.localMatrix);
-    // //Earth spin
-    // m4.multiply(m4.yRotation(-0.05), earthSphere.localMatrix, earthSphere.localMatrix);
-    // //Moon spin
-    // m4.multiply(m4.yRotation(-0.03), moonNode.localMatrix, moonNode.localMatrix);
-
+    if(controls.rotation){
+      orbitsSpin(orbits);
+      planetsSpin(planets);
+    }
+  
     // Aggiorno tutte le matrici del grafo a partite dal nodo radice che è il sole
     //sunNode.updateWorldMatrix();
     solarSystemNode.updateWorldMatrix();
 
     // Compute all the matrices for rendering
-    objects.forEach(function(object) {
+    planets.forEach(function(object) {
       object.drawInfo.uniforms.u_matrix = m4.multiply(viewProjectionMatrix, object.worldMatrix);
     });
 
@@ -101,7 +117,7 @@ async function main() {
     var lastUsedProgramInfo = null;
     var lastUsedBufferInfo = null;
 
-    objects.forEach(function(object){
+    planets.forEach(function(object){
       var programInfo = object.drawInfo.programInfo;
       var bufferInfo = object.drawInfo.bufferInfo;
       var bindBuffers = false;

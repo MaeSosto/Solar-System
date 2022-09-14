@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Solar System V1.8.1</title>
-    <link rel="stylesheet" href="../res/style.css">
+    <title>Solar System V1.8.2.1</title>
+    <link rel="stylesheet" href="../style/style.css">
     <script type="text/javascript" src="../res/webgl-utils.js"></script>
     <script type="text/javascript" src="../res/m4.js"></script>
     <script type="text/javascript" src="../res/primitives.js"></script>
@@ -10,7 +10,7 @@
     <script type="text/javascript" src="../res/dat.gui.js"></script>
     <script type="text/javascript" src="texture.js"></script>
     <script type="text/javascript" src="node.js"></script>
-    <script type="text/javascript" src="mouse.js"></script>
+    <script type="text/javascript" src="controls.js"></script>
     <script type="text/javascript" src="camera.js"></script>
   </head>
   <body>
@@ -61,6 +61,28 @@
       gl_FragColor = texture2D(u_texture, v_texcoord) * vec4(u_diffuse.rgb * light, u_diffuse.a);
     }
     </script>
+
+    <script  id="skybox-vertex-shader" type="x-shader/x-vertex">
+      attribute vec4 a_position;
+      varying vec4 v_position;
+      void main() {
+        v_position = a_position;
+        gl_Position = vec4(a_position.xy, 1, 1);
+      }
+      </script>
+      <script  id="skybox-fragment-shader" type="x-shader/x-fragment">
+      precision mediump float;
+      
+      uniform samplerCube u_skybox;
+      uniform mat4 u_viewDirectionProjectionInverse;
+      
+      varying vec4 v_position;
+      void main() {
+        vec4 t = u_viewDirectionProjectionInverse * v_position;
+        gl_FragColor = textureCube(u_skybox, normalize(t.xyz / t.w));
+      }
+      </script>
+      
     <script src="app.js"></script>
     
   </body>
