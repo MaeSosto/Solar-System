@@ -21,6 +21,7 @@ async function main() {
   //Carica le informazioni degli oggetti nei buffer
   const sphereBufferInfo = await getSphereBufferInfo(gl); //webglUtils.createBufferInfoFromArrays(gl, dataSphere); 
   const orbitBufferInfo = await getOrbitBufferInfo(gl);
+  const ringBufferInfo = await getringBufferInfo(gl);
   const quadBufferInfo = primitives.createXYQuadBufferInfo(gl);
 
   // setup GLSL program
@@ -36,7 +37,7 @@ async function main() {
 
   //Solar system node
   const solarSystemNode = new Node();
-  createSolarSystem(planets, orbits, programInfo, sphereBufferInfo, solarSystemNode);
+  createSolarSystem(planets, orbits, programInfo, sphereBufferInfo, ringBufferInfo, solarSystemNode);
   const orbitsCircle = setOrbits(programInfo, orbitBufferInfo, solarSystemNode);
   planets = planets.concat(orbitsCircle);
  
@@ -64,10 +65,41 @@ async function main() {
     var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     var projectionMatrix = m4.perspective(camera.fieldOfViewRadians, aspect, 1, 2000);
 
+  //   var what = planets[4].worldMatrix;
+  //  // console.log(what);
+  //   var look = [
+  //     what[12],
+  //     what[13],
+  //     what[14],
+  //   ];
+    
+    
     // Compute a matrix for the camera
     var cameraMatrix = m4.multiply( m4.xRotation(camera.XcameraAngleRadians), m4.zRotation(camera.ZcameraAngleRadians));
     cameraMatrix = m4.multiply(cameraMatrix, m4.yRotation(camera.YcameraAngleRadians))
     cameraMatrix = m4.translate(cameraMatrix, 0, 0, camera.D * 1.5);
+
+
+    // var cameraMatrix = m4.yRotation(cameraAngleRadians);
+    // cameraMatrix = m4.translate(cameraMatrix, 0, 0, camera.D * 1.5);
+
+    // Get the camera's position from the matrix we computed
+    var cameraPosition = [
+      cameraMatrix[12],
+      cameraMatrix[13],
+      cameraMatrix[14],
+    ];
+    
+
+    // var up = [0, 1, 0];
+
+    // var fPosition = [0, 0, 0];
+
+    
+
+    // Compute the camera's matrix using look at.
+    //var cameraMatrix = m4.lookAt(cameraPosition, look, up);
+  
 
     // Make a view matrix from the camera matrix.
     var viewMatrix = m4.inverse(cameraMatrix);

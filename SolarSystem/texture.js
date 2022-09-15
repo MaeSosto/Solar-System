@@ -23,18 +23,12 @@ function createSkyboxTexture(){
     },
   ];
   faceInfos.forEach((faceInfo) => {
-    const {target, url} = faceInfo;
+    const {target} = faceInfo;
 
     // Upload the canvas to the cubemap face.
-    const level = 0;
-    const internalFormat = gl.RGBA;
-    const width = 2048;
-    const height = 2048;
-    const format = gl.RGBA;
-    const type = gl.UNSIGNED_BYTE;
-
+    const dimensions = 2048;
     // setup each face so it's immediately renderable
-    gl.texImage2D(target, level, internalFormat, width, height, 0, format, type, null);
+    gl.texImage2D(target, 0, gl.RGBA, dimensions, dimensions, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
     // Asynchronously load an image
     const image = new Image();
@@ -42,7 +36,7 @@ function createSkyboxTexture(){
     image.addEventListener('load', function() {
       // Now that the image has loaded make copy it to the texture.
       gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
-      gl.texImage2D(target, level, internalFormat, format, type, image);
+      gl.texImage2D(target, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
       gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
     });
   });
