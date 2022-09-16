@@ -227,7 +227,7 @@ function orbitsSpin(orbits){
 }
 
 async function getsphereBufferInfo(gl){
-  const responseSphere = await fetch('../obj/sphere500.obj');  
+  const responseSphere = await fetch('../obj/sphere.obj');  
   const textSphere = await responseSphere.text();
   const dataSphere = parseOBJ(textSphere);
 return webglUtils.createBufferInfoFromArrays(gl, dataSphere); 
