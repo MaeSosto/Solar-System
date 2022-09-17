@@ -3,6 +3,7 @@
  * --------------------------------------------------------------------------- */ 
  const planetsInfo = [
   {
+    //0
     "name" : "Sun",
     "scaling" : 116,
     "translation" : 0,
@@ -10,8 +11,10 @@
     "sphereRotation" : 1993,
     "texture" : "../texture/Suntexture.jpg",
     "orbitRad" : 0,
+    "info": 'Radius: 696.340 km \n Distance: 0 \n Planet rotation: 1993m/s \n Orbit rotation: 0',
   },
   {
+    //1
     "name" : "Me",
     "scaling" : 20,
     "translation" : 0,
@@ -21,6 +24,7 @@
     "orbitRad" : 0,
   },
   {
+    //2
     "name" : "Mercury",
     "scaling" : 0.5,
     "translation" : 126,
@@ -30,6 +34,7 @@
     "orbitRad" : 1,
   },
   {
+    //3
     "name" : "Venus",
     "scaling" : 1,
     "translation" : 135,
@@ -39,6 +44,7 @@
     "orbitRad" : 1.071,
   },
   {
+    //4
     "name" : "Earth",
     "scaling" : 1,
     "translation" : 141,
@@ -47,7 +53,7 @@
     "texture" : "../texture/EarthTexture.jpg",
     "orbitRad" : 1.12,
   },
-  {
+  { //5
     "name" : "Mars",
     "scaling" : 0.5,   
     "translation" : 154.3,
@@ -57,6 +63,7 @@
     "orbitRad" : 1.2248,
   },
   {
+    //6
     "name" : "Jupiter",
     "scaling" : 11.5,
     "translation" : 257,
@@ -66,6 +73,7 @@
     "orbitRad" : 2.041,
   },
   {
+    //7
     "name" : "Saturn",
     "scaling" : 9.6,
     "translation" : 363.3,
@@ -75,6 +83,7 @@
     "orbitRad" : 2.8835,
   },
   {
+    //8
     "name" : "Uranus",
     "scaling" : 4.1,
     "translation" : 598.5,
@@ -83,7 +92,7 @@
     "texture" : "../texture/UranusTexture.jpg",
     "orbitRad" : 4.75,
   },
-  {
+  { //9
     "name" : "Neptune",
     "scaling" : 4,
     "translation" : 869.6,

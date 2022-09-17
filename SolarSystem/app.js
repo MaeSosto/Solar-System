@@ -65,18 +65,21 @@ async function main() {
     var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     var projectionMatrix = m4.perspective(camera.fieldOfViewRadians, aspect, 1, 2000);
 
-  //   var what = planets[4].worldMatrix;
-  //  // console.log(what);
-  //   var look = [
-  //     what[12],
-  //     what[13],
-  //     what[14],
-  //   ];
+    var planetWorldmatrix = planets[camera.planet].worldMatrix;
+   // console.log(what);
+    var planetPosition = [
+      planetWorldmatrix[12],
+      planetWorldmatrix[13],
+      planetWorldmatrix[14],
+    ];
     
     
     // Compute a matrix for the camera
-    var cameraMatrix = m4.multiply( m4.xRotation(camera.XcameraAngleRadians), m4.zRotation(camera.ZcameraAngleRadians));
-    cameraMatrix = m4.multiply(cameraMatrix, m4.yRotation(camera.YcameraAngleRadians))
+    var cameraMatrix = m4.identity(); //m4.multiply( m4.xRotation(camera.XcameraAngleRadians), m4.zRotation(camera.ZcameraAngleRadians));
+    cameraMatrix = m4.translate(cameraMatrix, planetPosition[0], planetPosition[1], planetPosition[2]);
+    cameraMatrix = m4.multiply(cameraMatrix, m4.xRotation(camera.XcameraAngleRadians));
+    cameraMatrix = m4.multiply(cameraMatrix, m4.yRotation(camera.YcameraAngleRadians));
+    cameraMatrix = m4.multiply(cameraMatrix, m4.zRotation(camera.ZcameraAngleRadians));
     cameraMatrix = m4.translate(cameraMatrix, 0, 0, camera.D * 1.5);
 
 
@@ -91,14 +94,14 @@ async function main() {
     ];
     
 
-    // var up = [0, 1, 0];
+    var up = [0, 1, 0];
 
-    // var fPosition = [0, 0, 0];
+    var fPosition = [0, 0, 0];
 
     
 
     // Compute the camera's matrix using look at.
-    //var cameraMatrix = m4.lookAt(cameraPosition, look, up);
+    //var cameraMatrix = m4.lookAt(cameraPosition, fPosition, up);
   
 
     // Make a view matrix from the camera matrix.
