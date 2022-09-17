@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Solar System V2.0</title>
-    <link rel="stylesheet" href="../style/style.css">
-    <script type="text/javascript" src="../res/webgl-utils.js"></script>
-    <script type="text/javascript" src="../res/m4.js"></script>
-    <script type="text/javascript" src="../res/primitives.js"></script>
-    <script type="text/javascript" src="../res/utils.js"></script>
-    <script type="text/javascript" src="../res/dat.gui.js"></script>
-    <script type="text/javascript" src="texture.js"></script>
-    <script type="text/javascript" src="node.js"></script>
-    <script type="text/javascript" src="controls.js"></script>
-    <script type="text/javascript" src="camera.js"></script>
-  </head>
-  <body>
-    <canvas id="canvas"></canvas>
-    <!-- vertex shader -->
-    <script  id="vertex-shader-3d" type="x-shader/x-vertex">
+
+<head>
+  <title>Solar System V2.1</title>
+  <link rel="stylesheet" href="../style/style.css">
+  <script type="text/javascript" src="../res/webgl-utils.js"></script>
+  <script type="text/javascript" src="../res/m4.js"></script>
+  <script type="text/javascript" src="../res/primitives.js"></script>
+  <script type="text/javascript" src="../res/utils.js"></script>
+  <script type="text/javascript" src="../res/dat.gui.js"></script>
+  <script type="text/javascript" src="texture.js"></script>
+  <script type="text/javascript" src="node.js"></script>
+  <script type="text/javascript" src="controls.js"></script>
+  <script type="text/javascript" src="camera.js"></script>
+</head>
+
+<body>
+  <div id="info"></div>
+  <canvas id="canvas"></canvas>
+  <!-- vertex shader -->
+  <script id="vertex-shader-3d" type="x-shader/x-vertex">
     attribute vec4 a_position;
     attribute vec2 a_texcoord;
     attribute vec3 a_normal;
@@ -38,8 +41,8 @@
     
     }
     </script>
-    <!-- fragment shader -->
-    <script  id="fragment-shader-3d" type="x-shader/x-fragment">
+  <!-- fragment shader -->
+  <script id="fragment-shader-3d" type="x-shader/x-fragment">
     precision mediump float;
 
     // Passed in from the vertex shader.
@@ -62,16 +65,16 @@
     }
     </script>
 
-    <script  id="skybox-vertex-shader" type="x-shader/x-vertex">
-      attribute vec4 a_position;
+  <script id="skybox-vertex-shader" type="x-shader/x-vertex">
+    attribute vec4 a_position;
       varying vec4 v_position;
       void main() {
         v_position = a_position;
         gl_Position = vec4(a_position.xy, 1, 1);
       }
       </script>
-      <script  id="skybox-fragment-shader" type="x-shader/x-fragment">
-      precision mediump float;
+  <script id="skybox-fragment-shader" type="x-shader/x-fragment">
+    precision mediump float;
       
       uniform samplerCube u_skybox;
       uniform mat4 u_viewDirectionProjectionInverse;
@@ -82,8 +85,9 @@
         gl_FragColor = textureCube(u_skybox, normalize(t.xyz / t.w));
       }
       </script>
-      
-    <script src="app.js"></script>
-    
-  </body>
+
+  <script src="app.js"></script>
+
+</body>
+
 </html>

@@ -1,9 +1,13 @@
-function createSkyboxTexture(){
+/** --------------------------------------------------------------------------
+ * GESTIONE DELLE TEXTURE
+ * --------------------------------------------------------------------------- */
+
+//Crea il box sulla quale disegnamo lo sfondo stellato
+function createSkyboxTexture() {
   const texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
 
-  const faceInfos = [
-    {
+  const faceInfos = [{
       target: gl.TEXTURE_CUBE_MAP_POSITIVE_X,
     },
     {
@@ -23,7 +27,9 @@ function createSkyboxTexture(){
     },
   ];
   faceInfos.forEach((faceInfo) => {
-    const {target} = faceInfo;
+    const {
+      target
+    } = faceInfo;
 
     // Upload the canvas to the cubemap face.
     const dimensions = 2048;
@@ -33,7 +39,7 @@ function createSkyboxTexture(){
     // Asynchronously load an image
     const image = new Image();
     image.src = '../texture/galaxy2048.jpg';
-    image.addEventListener('load', function() {
+    image.addEventListener('load', function () {
       // Now that the image has loaded make copy it to the texture.
       gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
       gl.texImage2D(target, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
@@ -47,42 +53,48 @@ function createSkyboxTexture(){
 }
 
 //Restituisce una texture dato il path di un'immagine
-function createTexture(path){
+function createTexture(path) {
   // Create a texture.
   var texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, texture);
   // Fill the texture with a 1x1 blue pixel.
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
-                new Uint8Array([0, 0, 255, 255]));
+    new Uint8Array([0, 0, 255, 255]));
   // Asynchronously load an image
   var image = new Image();
   image.src = path;
-  image.addEventListener('load', function() {
+  image.addEventListener('load', function () {
     // Now that the image has loaded make copy it to the texture.
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, image);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
     // Check if the image is a power of 2 in both dimensions.
     if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
-        // Yes, it's a power of 2. Generate mips.
-        gl.generateMipmap(gl.TEXTURE_2D);
+      // Yes, it's a power of 2. Generate mips.
+      gl.generateMipmap(gl.TEXTURE_2D);
     } else {
-        // No, it's not a power of 2. Turn of mips and set wrapping to clamp to edge
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      // No, it's not a power of 2. Turn of mips and set wrapping to clamp to edge
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     }
-    
+
   });
   return texture;
 }
 
+//Dato il testo conetnuto dentro un file .obj crea gli array che contengono le cordinate dei vertici, della texture, le normali 
 function parseOBJ(text) {
-  console.log("CONS");
   // because indices are base 1 let's just fill in the 0th data
-  const objPositions = [[0, 0, 0]];
-  const objTexcoords = [[0, 0]];
-  const objNormals = [[0, 0, 0]];
+  const objPositions = [
+    [0, 0, 0]
+  ];
+  const objTexcoords = [
+    [0, 0]
+  ];
+  const objNormals = [
+    [0, 0, 0]
+  ];
 
   // same order as `f` indices
   const objVertexData = [
@@ -93,19 +105,10 @@ function parseOBJ(text) {
 
   // same order as `f` indices
   let webglVertexData = [
-    [],   // positions
-    [],   // texcoords
-    [],   // normals
+    [], // positions
+    [], // texcoords
+    [], // normals
   ];
-
-  function newGeometry() {
-    // If there is an existing geometry and it's
-    // not empty then start a new one.
-    if (geometry && geometry.data.position.length) {
-      geometry = undefined;
-    }
-    setGeometry();
-  }
 
   function addVertex(vert) {
     const ptn = vert.split('/');
@@ -155,7 +158,7 @@ function parseOBJ(text) {
     const parts = line.split(/\s+/).slice(1);
     const handler = keywords[keyword];
     if (!handler) {
-      console.warn('unhandled keyword:', keyword);  // eslint-disable-line no-console
+      console.warn('unhandled keyword:', keyword); // eslint-disable-line no-console
       continue;
     }
     handler(parts, unparsedArgs);
@@ -169,23 +172,30 @@ function parseOBJ(text) {
 }
 
 //Corregge la visualizzazione della texture nella giusta asse
-function fixTexture(objects){
-  objects.forEach(function(object) {
+function fixTexture(objects) {
+  objects.forEach(function (object) {
     m4.multiply(m4.xRotation(degToRad(90)), object.localMatrix, object.localMatrix);
   });
 }
 
-async function getSphereBufferInfo(gl){
-  const responseSphere = await fetch('../obj/sphere.obj');  
+async function getSphereBufferInfo(gl) {
+  const responseSphere = await fetch('../obj/sphere.obj');
   const textSphere = await responseSphere.text();
   const dataSphere = parseOBJ(textSphere);
-  return webglUtils.createBufferInfoFromArrays(gl, dataSphere); 
+  return webglUtils.createBufferInfoFromArrays(gl, dataSphere);
 }
 
-async function getOrbitBufferInfo(gl){
-  const responseOrbit = await fetch('../obj/orbitNew.obj');  
+async function getOrbitBufferInfo(gl) {
+  const responseOrbit = await fetch('../obj/orbitNew.obj');
   const textOrbit = await responseOrbit.text();
   const dataOrbit = parseOBJ(textOrbit);
-  return webglUtils.createBufferInfoFromArrays(gl, dataOrbit); 
+  return webglUtils.createBufferInfoFromArrays(gl, dataOrbit);
 }
 
+//genera e gestisce i buffer per un oggetto di tipo anello (utilizzato per Saturno)
+async function getringBufferInfo(gl) {
+  const responseOrbit = await fetch('../obj/anelli.obj');
+  const textOrbit = await responseOrbit.text();
+  const dataOrbit = parseOBJ(textOrbit);
+  return webglUtils.createBufferInfoFromArrays(gl, dataOrbit);
+}

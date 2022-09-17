@@ -3,7 +3,7 @@ var gl;
 
 /** --------------------------------------------------------------------------
  * MAIN FUNCTION
- * --------------------------------------------------------------------------- */ 
+ * --------------------------------------------------------------------------- */
 async function main() {
   // Get A WebGL context
   /** @type {HTMLCanvasElement} */
@@ -13,6 +13,7 @@ async function main() {
     return;
   }
 
+  //Disegno la control gui
   define_gui();
 
   //Imposto le funzionalità del mouse
@@ -33,19 +34,19 @@ async function main() {
 
   //Creazione del sistema solare
   var planets = [];
-  var orbits =[];
+  var orbits = [];
 
   //Solar system node
   const solarSystemNode = new Node();
   createSolarSystem(planets, orbits, programInfo, sphereBufferInfo, ringBufferInfo, solarSystemNode);
   const orbitsCircle = setOrbits(programInfo, orbitBufferInfo, solarSystemNode);
   planets = planets.concat(orbitsCircle);
- 
+
   requestAnimationFrame(drawScene);
 
-/** --------------------------------------------------------------------------
- * ANIMATION FRAME
- * --------------------------------------------------------------------------- */ 
+  /** --------------------------------------------------------------------------
+   * ANIMATION FRAME
+   * --------------------------------------------------------------------------- */
   function drawScene(time) {
     time *= 0.0005;
 
@@ -65,15 +66,17 @@ async function main() {
     var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     var projectionMatrix = m4.perspective(camera.fieldOfViewRadians, aspect, 1, 2000);
 
+    //Scrivo le informazioni dei pianeti
+    document.getElementById('info').innerHTML = getInfoPlanet(camera.planet);
+
+    //Prendo la world matrix del pianeta che voglio visualizzare
     var planetWorldmatrix = planets[camera.planet].worldMatrix;
-   // console.log(what);
     var planetPosition = [
       planetWorldmatrix[12],
       planetWorldmatrix[13],
       planetWorldmatrix[14],
     ];
-    
-    
+
     // Compute a matrix for the camera
     var cameraMatrix = m4.identity(); //m4.multiply( m4.xRotation(camera.XcameraAngleRadians), m4.zRotation(camera.ZcameraAngleRadians));
     cameraMatrix = m4.translate(cameraMatrix, planetPosition[0], planetPosition[1], planetPosition[2]);
@@ -82,31 +85,9 @@ async function main() {
     cameraMatrix = m4.multiply(cameraMatrix, m4.zRotation(camera.ZcameraAngleRadians));
     cameraMatrix = m4.translate(cameraMatrix, 0, 0, camera.D * 1.5);
 
-
-    // var cameraMatrix = m4.yRotation(cameraAngleRadians);
-    // cameraMatrix = m4.translate(cameraMatrix, 0, 0, camera.D * 1.5);
-
-    // Get the camera's position from the matrix we computed
-    var cameraPosition = [
-      cameraMatrix[12],
-      cameraMatrix[13],
-      cameraMatrix[14],
-    ];
-    
-
-    var up = [0, 1, 0];
-
-    var fPosition = [0, 0, 0];
-
-    
-
-    // Compute the camera's matrix using look at.
-    //var cameraMatrix = m4.lookAt(cameraPosition, fPosition, up);
-  
-
     // Make a view matrix from the camera matrix.
     var viewMatrix = m4.inverse(cameraMatrix);
-    
+
     var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
 
     var viewDirectionMatrix = m4.copy(viewMatrix);
@@ -117,13 +98,15 @@ async function main() {
     var viewDirectionProjectionMatrix = m4.multiply(projectionMatrix, viewDirectionMatrix);
     var viewDirectionProjectionInverseMatrix = m4.inverse(viewDirectionProjectionMatrix);
 
-
     //Disegno lo skybox
     // let our quad pass the depth test at 1.0
     gl.depthFunc(gl.LEQUAL);
     gl.useProgram(skyboxProgramInfo.program);
     webglUtils.setBuffersAndAttributes(gl, skyboxProgramInfo, quadBufferInfo);
-    webglUtils.setUniforms(skyboxProgramInfo, {u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix, u_skybox: skyboxTexture,});
+    webglUtils.setUniforms(skyboxProgramInfo, {
+      u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,
+      u_skybox: skyboxTexture,
+    });
     webglUtils.drawBufferInfo(gl, quadBufferInfo);
 
     const sharedUniforms = {
@@ -132,18 +115,19 @@ async function main() {
       u_projection: viewProjectionMatrix,
       u_diffuse: [2, 2, 2, 2]
     };
-    
-    if(controls.rotation){
+
+    //Controllo se i pianeti devono ruotare e in tal caso chiamo le funzioni che permettono la rotazione dei pianeti sulla propria asse e sulla propria orbita
+    if (controls.rotation) {
       orbitsSpin(orbits);
       planetsSpin(planets);
     }
-  
+
     // Aggiorno tutte le matrici del grafo a partite dal nodo radice che è il sole
     //sunNode.updateWorldMatrix();
     solarSystemNode.updateWorldMatrix();
 
     // Compute all the matrices for rendering
-    planets.forEach(function(object) {
+    planets.forEach(function (object) {
       object.drawInfo.uniforms.u_matrix = m4.multiply(viewProjectionMatrix, object.worldMatrix);
     });
 
@@ -152,16 +136,16 @@ async function main() {
     var lastUsedProgramInfo = null;
     var lastUsedBufferInfo = null;
 
-    planets.forEach(function(object){
+    planets.forEach(function (object) {
       var programInfo = object.drawInfo.programInfo;
       var bufferInfo = object.drawInfo.bufferInfo;
       var bindBuffers = false;
-      
+
       // Setup all the needed attributes.
       if (bindBuffers || bufferInfo !== lastUsedBufferInfo) {
         lastUsedBufferInfo = bufferInfo;
         webglUtils.setBuffersAndAttributes(gl, programInfo, bufferInfo);
-      
+
         if (programInfo !== lastUsedProgramInfo) {
           lastUsedProgramInfo = programInfo;
           gl.useProgram(programInfo.program);
@@ -169,15 +153,14 @@ async function main() {
         }
       }
 
-       // Set the uniforms.
-       webglUtils.setUniforms(programInfo, object.drawInfo.uniforms);
+      // Set the uniforms.
+      webglUtils.setUniforms(programInfo, object.drawInfo.uniforms);
 
-       // calls gl.uniform
-       webglUtils.setUniforms(programInfo, sharedUniforms);
-     
- 
-       // Draw
-       gl.drawArrays(gl.TRIANGLES, 0, bufferInfo.numElements);
+      // calls gl.uniform
+      webglUtils.setUniforms(programInfo, sharedUniforms);
+
+      // Draw
+      gl.drawArrays(gl.TRIANGLES, 0, bufferInfo.numElements);
     });
 
     requestAnimationFrame(drawScene);
