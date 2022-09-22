@@ -2,17 +2,17 @@
 <html>
 
 <head>
-  <title>Solar System V2.1</title>
+  <title>Solar System</title>
   <link rel="stylesheet" href="../style/style.css">
   <script type="text/javascript" src="../res/webgl-utils.js"></script>
   <script type="text/javascript" src="../res/m4.js"></script>
   <script type="text/javascript" src="../res/primitives.js"></script>
-  <script type="text/javascript" src="../res/utils.js"></script>
+  <script type="text/javascript" src="utils.js"></script>
   <script type="text/javascript" src="../res/dat.gui.js"></script>
   <script type="text/javascript" src="texture.js"></script>
   <script type="text/javascript" src="node.js"></script>
   <script type="text/javascript" src="controls.js"></script>
-  <script type="text/javascript" src="camera.js"></script>
+  <script type="text/javascript" src="gui.js"></script>
 </head>
 
 <body>
@@ -25,7 +25,7 @@
     attribute vec3 a_normal;
 
     uniform mat4 u_matrix;
-  
+
     varying vec2 v_texcoord;
     varying vec3 v_normal;
 
@@ -38,9 +38,9 @@
 
       // orient the normals and pass to the fragment shader
       v_normal = mat3(u_matrix) * a_normal;
-    
+
     }
-    </script>
+  </script>
   <!-- fragment shader -->
   <script id="fragment-shader-3d" type="x-shader/x-fragment">
     precision mediump float;
@@ -63,28 +63,28 @@
       
       gl_FragColor = texture2D(u_texture, v_texcoord) * vec4(u_diffuse.rgb * light, u_diffuse.a);
     }
-    </script>
+  </script>
 
   <script id="skybox-vertex-shader" type="x-shader/x-vertex">
     attribute vec4 a_position;
-      varying vec4 v_position;
-      void main() {
-        v_position = a_position;
-        gl_Position = vec4(a_position.xy, 1, 1);
-      }
-      </script>
+    varying vec4 v_position;
+    void main() {
+      v_position = a_position;
+      gl_Position = vec4(a_position.xy, 1, 1);
+    }
+  </script>
   <script id="skybox-fragment-shader" type="x-shader/x-fragment">
     precision mediump float;
       
-      uniform samplerCube u_skybox;
-      uniform mat4 u_viewDirectionProjectionInverse;
-      
-      varying vec4 v_position;
-      void main() {
-        vec4 t = u_viewDirectionProjectionInverse * v_position;
-        gl_FragColor = textureCube(u_skybox, normalize(t.xyz / t.w));
-      }
-      </script>
+    uniform samplerCube u_skybox;
+    uniform mat4 u_viewDirectionProjectionInverse;
+    
+    varying vec4 v_position;
+    void main() {
+      vec4 t = u_viewDirectionProjectionInverse * v_position;
+      gl_FragColor = textureCube(u_skybox, normalize(t.xyz / t.w));
+    }
+  </script>
 
   <script src="app.js"></script>
 

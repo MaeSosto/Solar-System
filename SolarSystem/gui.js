@@ -3,7 +3,7 @@
  * --------------------------------------------------------------------------- */
 var dr = 5.0 * Math.PI / 180.0;
 
-var camera = {
+var GUI = {
   D: 700,
   fieldOfViewRadians: degToRad(60),
   YcameraAngleRadians: degToRad(3.14),
@@ -14,12 +14,12 @@ var camera = {
 
 //Controlli della Gui modificabili
 var controlsGui = function () {
-  this.D = 1;
-  this.fieldOfViewRadians = degToRad(60);
-  this.YcameraAngleRadians = degToRad(3.14);
-  this.XcameraAngleRadians = degToRad(3.14);
-  this.ZcameraAngleRadians = degToRad(3.14);
-  this.planet = "Sun";
+  this.Distance = 1;
+  this.Y = degToRad(3.14);
+  this.X = degToRad(3.14);
+  this.Z = degToRad(3.14);
+  this.Planet = "Sun";
+  this.Speed = 0.00001;
 }
 
 //Disegna la gui
@@ -27,21 +27,22 @@ function define_gui() {
   controlsGui = new controlsGui();
   setValue();
   var gui = new dat.GUI();
-  gui.add(controlsGui, 'XcameraAngleRadians', 0, 6.28).onChange(setValue);
-  gui.add(controlsGui, 'YcameraAngleRadians', 0, 6.28).onChange(setValue);
-  gui.add(controlsGui, 'ZcameraAngleRadians', 0, 6.28).onChange(setValue);
-  gui.add(controlsGui, 'D', 1, 1000).onChange(setValue);
-  gui.add(controls, 'rotationSpeed', 0.0000010000000000000002, 0.001).onChange(setValue);
-  gui.add(controlsGui, 'planet', ["Sun", "Mercury", "Venus", "Earth", "Moon", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Me"]).onChange(setValue);
+  gui.add(controlsGui, 'X', 0, 6.28).onChange(setValue);
+  gui.add(controlsGui, 'Y', 0, 6.28).onChange(setValue);
+  gui.add(controlsGui, 'Z', 0, 6.28).onChange(setValue);
+  gui.add(controlsGui, 'Distance', 1, 1000).onChange(setValue);
+  gui.add(controlsGui, 'Speed', 0.0000010000000000000002, 0.001).onChange(setValue);
+  gui.add(controlsGui, 'Planet', ["Sun", "Mercury", "Venus", "Earth", "Moon", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Me"]).onChange(setValue);
 }
 
 //Imposta i valori settati dalla gui all'oggetto camera
 function setValue() {
-  camera.D = fixDistance(controlsGui.planet) + controlsGui.D;
-  camera.YcameraAngleRadians = controlsGui.YcameraAngleRadians;
-  camera.XcameraAngleRadians = controlsGui.XcameraAngleRadians;
-  camera.ZcameraAngleRadians = controlsGui.ZcameraAngleRadians;
-  camera.planet = getNumPlanet(controlsGui.planet);
+  GUI.D = fixDistance(controlsGui.Planet) + controlsGui.Distance;
+  GUI.YcameraAngleRadians = controlsGui.Y;
+  GUI.XcameraAngleRadians = controlsGui.X;
+  GUI.ZcameraAngleRadians = controlsGui.Z;
+  GUI.planet = getNumPlanet(controlsGui.Planet);
+  controls.rotationSpeed = controlsGui.Speed;
 }
 
 //Dal numero del pianeta prendo la sua dimensione del raggio

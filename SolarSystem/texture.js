@@ -7,30 +7,15 @@ function createSkyboxTexture() {
   const texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
 
-  const faceInfos = [{
-      target: gl.TEXTURE_CUBE_MAP_POSITIVE_X,
-    },
-    {
-      target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X,
-    },
-    {
-      target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
-    },
-    {
-      target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
-    },
-    {
-      target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
-    },
-    {
-      target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z,
-    },
+  const faceInfos = [
+    gl.TEXTURE_CUBE_MAP_POSITIVE_X,
+    gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 
+    gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
+    gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
+    gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+    gl.TEXTURE_CUBE_MAP_NEGATIVE_Z,
   ];
-  faceInfos.forEach((faceInfo) => {
-    const {
-      target
-    } = faceInfo;
-
+  faceInfos.forEach((target) => {
     // Upload the canvas to the cubemap face.
     const dimensions = 2048;
     // setup each face so it's immediately renderable

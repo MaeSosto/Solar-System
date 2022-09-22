@@ -20,7 +20,7 @@ async function main() {
   controlsSettings(canvas);
 
   //Carica le informazioni degli oggetti nei buffer
-  const sphereBufferInfo = await getSphereBufferInfo(gl); //webglUtils.createBufferInfoFromArrays(gl, dataSphere); 
+  const sphereBufferInfo = await getSphereBufferInfo(gl); 
   const orbitBufferInfo = await getOrbitBufferInfo(gl);
   const ringBufferInfo = await getringBufferInfo(gl);
   const quadBufferInfo = primitives.createXYQuadBufferInfo(gl);
@@ -64,13 +64,13 @@ async function main() {
 
     // Compute the projection matrix
     var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-    var projectionMatrix = m4.perspective(camera.fieldOfViewRadians, aspect, 1, 2000);
+    var projectionMatrix = m4.perspective(GUI.fieldOfViewRadians, aspect, 1, 2000);
 
     //Scrivo le informazioni dei pianeti
-    document.getElementById('info').innerHTML = getInfoPlanet(camera.planet);
+    document.getElementById('info').innerHTML = getInfoPlanet(GUI.planet);
 
     //Prendo la world matrix del pianeta che voglio visualizzare
-    var planetWorldmatrix = planets[camera.planet].worldMatrix;
+    var planetWorldmatrix = planets[GUI.planet].worldMatrix;
     var planetPosition = [
       planetWorldmatrix[12],
       planetWorldmatrix[13],
@@ -80,10 +80,10 @@ async function main() {
     // Compute a matrix for the camera
     var cameraMatrix = m4.identity(); //m4.multiply( m4.xRotation(camera.XcameraAngleRadians), m4.zRotation(camera.ZcameraAngleRadians));
     cameraMatrix = m4.translate(cameraMatrix, planetPosition[0], planetPosition[1], planetPosition[2]);
-    cameraMatrix = m4.multiply(cameraMatrix, m4.xRotation(camera.XcameraAngleRadians));
-    cameraMatrix = m4.multiply(cameraMatrix, m4.yRotation(camera.YcameraAngleRadians));
-    cameraMatrix = m4.multiply(cameraMatrix, m4.zRotation(camera.ZcameraAngleRadians));
-    cameraMatrix = m4.translate(cameraMatrix, 0, 0, camera.D * 1.5);
+    cameraMatrix = m4.multiply(cameraMatrix, m4.xRotation(GUI.XcameraAngleRadians));
+    cameraMatrix = m4.multiply(cameraMatrix, m4.yRotation(GUI.YcameraAngleRadians));
+    cameraMatrix = m4.multiply(cameraMatrix, m4.zRotation(GUI.ZcameraAngleRadians));
+    cameraMatrix = m4.translate(cameraMatrix, 0, 0, GUI.D * 1.5);
 
     // Make a view matrix from the camera matrix.
     var viewMatrix = m4.inverse(cameraMatrix);

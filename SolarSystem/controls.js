@@ -31,8 +31,8 @@ var mouseMove = function (e) {
   if (!controls.drag) return false;
   controls.dX = (e.pageX - controls.old_x) * 2 * Math.PI / canvas.width,
     controls.dY = (e.pageY - controls.old_y) * 2 * Math.PI / canvas.height;
-  camera.YcameraAngleRadians -= controls.dX;
-  camera.XcameraAngleRadians -= controls.dY;
+    GUI.YcameraAngleRadians -= controls.dX;
+    GUI.XcameraAngleRadians -= controls.dY;
   controls.old_x = e.pageX, controls.old_y = e.pageY;
   e.preventDefault();
 };
@@ -41,9 +41,9 @@ var mouseMove = function (e) {
 var wheelZoom = function (event) {
   //console.log(camera.D);
   if (event.deltaY < 0 /*&& camera.D<= 1000*/ ) {
-    camera.D += Math.abs(event.deltaY);
+    GUI.D += Math.abs(event.deltaY);
   } else if (event.deltaY > 0 /*&& camera.D>= 100*/ ) {
-    camera.D -= Math.abs(event.deltaY);
+    GUI.D -= Math.abs(event.deltaY);
   }
   event.preventDefault();
 }
