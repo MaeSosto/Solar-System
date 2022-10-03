@@ -1,0 +1,22 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background-color: #cccccc;
+  display: block;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+
+  background-color: #cccccc;
+}
+
+#info {
+  margin: 20px;
+  display: block;
+  position: fixed;
+  color: white;
+}

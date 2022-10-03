@@ -1,0 +1,78 @@
+body {
+   
+    /* border: 1px solid black;
+    padding: 2% 5%; */
+    text-align: justify;
+}
+
+
+h2{
+    text-align: center;
+}
+
+.card {
+    font-family: Consolas,"courier new" !important;
+    background-color: #f1f1f1 !important;
+}
+
+img{
+    width: 100%;
+}
+
+table, th, td {
+    border: 1px solid grey;
+    border-collapse: collapse;
+    padding: 5px;
+    margin: auto;
+}
+
+video {
+    margin: auto;
+    width: 100%;
+    
+}
+
+
+#titles {
+    width: 100%;
+    text-align: center;
+    background-color: #141a34 ;
+    color: #f1f1f1;
+    padding: 2% 5%; 
+}
+
+.column {
+    float: left;
+    width: 47%;
+    padding: 10px;
+   
+   
+}
+.text{
+    height: 140px;
+}
+
+.text_long{
+    height: 200px;
+}
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.column2 {
+    float: left;
+    width: 60%;
+    padding: 10px;
+}
+.column1 {
+    float: left;
+    width: 35%;
+    padding: 10px;
+}
+
+.selector-for-some-widget {
+    box-sizing: content-box;
+  }
