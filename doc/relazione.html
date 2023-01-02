@@ -156,11 +156,11 @@
                     tasti
                     utilizzabili sono i seguenti:<br>
                     <ul>
-                        <li>[space] : permette di avviare/ fermare la rotazione degli oggetti sulle orbite e sulle
+                        <li>[c] : permette di avviare/ fermare la rotazione degli oggetti sulle orbite e sulle
                             proprie
                             assi.</li>
-                        <li>[M] : permette di aumentare la velocità di rotazione.</li>
-                        <li>[L] : permette di rallentare la velocità di rotazione.</li>
+                        <li>[x] : permette di aumentare la velocità di rotazione.</li>
+                        <li>[z] : permette di rallentare la velocità di rotazione.</li>
                     </ul>
                 </p>
             </div>
@@ -631,17 +631,17 @@ var wheelZoom = function (event) {
         </div>
         <p>Per ciò che concerne la tastiera, questa viene utilizzata una funzione di controllo dei tasti: in base al tasto
             rilasciato
-            vengono svolte le operazioni note, ovvero la barra spaziatrice permette di fermare la rotazione, mentre i
-            tasti L e M controllano l'aumento e la riduzione della velocità.</p>
+            vengono svolte le operazioni note, ovvero il tasto c permette di fermare la rotazione, mentre i
+            tasti x e z controllano l'aumento e la riduzione della velocità.</p>
         <div class="card">
             <pre class="card-body"><code>function doKeyUp(e) {
-    //Space key
+    ////tasto C per fermare la rotazione 
     if (e.keyCode == 32)
         controls.rotation = !controls.rotation;
-    //M key
+    //tasto X aumenta velocità
     if (e.keyCode == 77 && controls.rotationSpeed < 0.001)
         controls.rotationSpeed *= 10;
-    //L key 
+    //tasto Z diminuisce velocità
     if (e.keyCode == 76 && controls.rotationSpeed > 0.0000010000000000000002)
         controls.rotationSpeed /= 10;
 }</code></pre>
