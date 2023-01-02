@@ -49,14 +49,14 @@ var wheelZoom = function (event) {
 }
 //Quando viene rilasciato un tasto
 function doKeyUp(e) {
-  //Space key
-  if (e.keyCode == 32)
+  //tasto C per fermare la rotazione 
+  if (e.keyCode == 67)
     controls.rotation = !controls.rotation;
-  //M key
-  if (e.keyCode == 77 && controls.rotationSpeed < 0.001)
+  //tasto X aumenta velocità
+  if (e.keyCode == 88 && controls.rotationSpeed < 0.001)
     controls.rotationSpeed *= 10;
-  //L key 
-  if (e.keyCode == 76 && controls.rotationSpeed > 0.0000010000000000000002)
+  //tasto Z diminuisce velocità
+  if (e.keyCode == 90 && controls.rotationSpeed > 0.0000010000000000000002)
     controls.rotationSpeed /= 10;
 }
 

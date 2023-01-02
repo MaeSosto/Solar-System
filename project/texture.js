@@ -115,7 +115,6 @@ function parseOBJ(text) {
       objNormals.push(parts.map(parseFloat));
     },
     vt(parts) {
-      // should check for missing v and extra w?
       objTexcoords.push(parts.map(parseFloat));
     },
     f(parts) {
@@ -163,6 +162,7 @@ function fixTexture(objects) {
   });
 }
 
+//genera e gestisce i buffer per un oggetto di tipo sfera
 async function getSphereBufferInfo(gl) {
   const responseSphere = await fetch('obj/sphere.obj');
   const textSphere = await responseSphere.text();
@@ -170,6 +170,7 @@ async function getSphereBufferInfo(gl) {
   return webglUtils.createBufferInfoFromArrays(gl, dataSphere);
 }
 
+//genera e gestisce i buffer per un oggetto di tipo orbita
 async function getOrbitBufferInfo(gl) {
   const responseOrbit = await fetch('obj/orbitNew.obj');
   const textOrbit = await responseOrbit.text();

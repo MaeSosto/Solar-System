@@ -1,6 +1,13 @@
 /** --------------------------------------------------------------------------
  * GESTIONE DEI NODI
  * --------------------------------------------------------------------------- */
+// scaling = dimensione del pianeta
+// translation = traslazione del centro dell'oggetto dal suo centro 
+// orbit rotation = velocità di rotazione dell'oggetto intorno alla sua orbita
+// sphere rotation = velocità di rotazione dell'oggetto sulla sua asse
+// texture = texture usata sull'oggetto
+// orbitRad = dimensione dell'oggetto orbita (anello giallo) attorno al pianeta
+// info = informazioni di descrizione del pianeta
 const planetsInfo = [{
     //0
     "name": "Sun",
@@ -134,6 +141,7 @@ const SaturnRings = {
 
 //Oggetto Node
 var Node = function () {
+  this.name = ""
   this.children = [];
   this.localMatrix = m4.identity();
   this.worldMatrix = m4.identity();
@@ -185,11 +193,13 @@ function createSolarSystem(planets, orbits, programInfo, sphereBufferInfo, ringB
 function createOrbit(info, planets, orbits, programInfo, sphereBufferInfo, ringBufferInfo, solarSystemNode) {
   //Orbit
   var orbit = new Node();
+  orbit.name= orbit.name.concat(info.name).concat(" orbit") 
   orbit.localMatrix = m4.translation(0, 0, info.translation);
   orbit.rotation = info.orbitRotation;
 
   //Sphere
   var sphere = new Node();
+  sphere.name= sphere.name.concat(info.name).concat(" sphere") 
   sphere.localMatrix = m4.scaling(info.scaling, info.scaling, info.scaling);
   sphere.rotation = info.sphereRotation;
   sphere.drawInfo = {
@@ -219,6 +229,7 @@ function setOrbits(programInfo, orbitBufferInfo, solarSystemNode) {
 
   planetsInfo.forEach(function (planet) {
     var orbit = new Node();
+    orbit.name= orbit.name.concat(planet.name).concat(" yellow ring") 
     orbit.localMatrix = m4.scaling(planet.orbitRad, planet.orbitRad, planet.orbitRad);
     orbit.rotation = 0;
     orbit.drawInfo = {
