@@ -63,14 +63,15 @@
         </div>
         <br>
         <p>
-            L'applicazione consiste in una mappa 3D del sistema solare a dimensioni e dinamiche coerenti e proporzionate
-            a dati reali. Tutte le texture e l'environment sono state applicate alle forme degli oggetti per rendere lo
-            spazio più completo e coerente possibile. Lanciata la mappa è infatti possibile visualizzare e muoversi tra
-            i principali pianeti, stelle e satelliti appartenenti al sistema solare sia in modalità statica che dinamica
-            e in tutte le possibili angolazioni. È inoltre presente una piccola interfaccia utente che permette la
-            modifica dei valori di visualizzazione e di navigazione nello spazio modificabile tramite mouse o, se si
-            naviga da mobile, al tocco. Per ogni osservazione di un oggetto viene anche mostrata una breve descrizione
-            delle sue caratteristiche reali a scopo informativo.
+            L'applicazione consiste in una mappa 3D del sistema solare le cui dimensioni sono coerenti e proporzionate
+            a dati reali. A ogni oggetto appartentente all'ambiente sono state applicate texture e dinamiche che permettono 
+            di emulare il sistema solare nel modo più accurato possibile. Una volta aperto l'applicativo, l'utente è in grado 
+            di osservare e muovere la propria visuale tra
+            i principali pianeti, stelle e satelliti appartenenti al sistema solare; questo sarà possibile sia in modalità statica che dinamica
+            e in tutte le possibili angolazioni. È presente inoltre una piccola interfaccia di gestione della visualizzazione che permette la
+            modifica dei valori di osservazione e di navigazione nello spazio: tale menu è modificabile sia tramite mouse sia, se si
+            naviga da mobile, al tocco. Per ogni osservazione di un oggetto viene anche mostrata una breve descrizione a scopo informativo
+            delle sue caratteristiche reali, tra cui il nome, il raggio della sfera, la distanza dal Sole, la velocità di rotazione del pianeta sul proprio asse e attorno alla propria orbita.
         </p>
         
         <div class="row">
@@ -78,9 +79,7 @@
                 <div class="text">
                     <h3>Visualizzazione globale</h3>
                     <p>La visualizzazione globale permette di osservare il sistema solare per intero. Questo ha
-                        come punto centrale il sole e il punto di osservazione risulta molto distante da esso
-                        per
-                        permettere una visuale completa.</p>
+                        come punto centrale il Sole e il punto di osservazione permette una visuale completa.</p>
                 </div>
                 <video autoplay muted loop>
                     <source src="records/globale_c.mp4" type="video/mp4">
@@ -137,15 +136,13 @@
         <div class="row">
             <div class="col">
                 <h3>Navigazione sullo spazio</h3>
-                <p>Cliccando con il tasto sinistro del mouse e trascinando sullo schermo è possibile modificare
-                    l’angolazione della posizione della visualizzazione utente nell’ambiente 3D visibile. Tali
-                    spostamenti avvengono sulle assi X, Y e Z con una distanza precisa D dall’oggetto che si sta
-                    visualizzando. È possibile fare la stessa cosa utilizzando semplicemente il tocco e lo
-                    spostamento
-                    delle dita su mobile.
-                    È inoltre possibile avvicinarsi e allontanarsi dall’oggetto scelto dall'utente
-                    utilizzando la rotella del mouse - verso avanti per zoommare, vero indietro per allontanarsi -
-                    oppure su mobile è possibile effettuare un pinch-out per avvicinarsi e un pinch-in per
+                <p>Cliccando con il tasto sinistro del mouse e trascinando il cursore sull'interfaccia è possibile modificare
+                    l’angolazione della visualizzazione utente nell’ambiente 3D visibile. Tali
+                    spostamenti avvengono sugli assi X, Y e Z con una distanza precisa D dall’oggetto che si sta
+                    visualizzando. È possibile ottenere lo stesso risultato tramite tocco sulla versione mobile.
+                    È inoltre possibile avvicinarsi e allontanarsi dall’oggetto che si sta visualizzando
+                    utilizzando la rotella del mouse - scorrimento della ruota verso il basso per zoommare, verso l'alto per allontanare -
+                    oppure su mobile è possibile effettuare un pinch-out con le dita per avvicinarsi e un pinch-in per
                     allontanarsi.
                 </p>
             </div>
@@ -156,8 +153,8 @@
                     tasti
                     utilizzabili sono i seguenti:<br>
                     <ul>
-                        <li>[c] : permette di avviare/ fermare la rotazione degli oggetti sulle orbite e sulle
-                            proprie
+                        <li>[c] : permette di avviare/ fermare la rotazione degli oggetti sulle orbite e sui
+                            propri
                             assi.</li>
                         <li>[x] : permette di aumentare la velocità di rotazione.</li>
                         <li>[z] : permette di rallentare la velocità di rotazione.</li>
@@ -184,7 +181,7 @@
         <br>
         <!-- SHADERS -->
         <h3 id="shaders">Shaders</h3>
-        <p>Per l'applicativo descritto sono stati utilizzati due vertex e fragment shader come mostrato di seguito
+        <p>Per l'applicativo descritto sono stati utilizzati due vertex e fragment shader come mostrato di seguito.
         </p>
         <p>Il primo vertex e fragment shader si occupano di gestire la posizione e le coordinate dei vertici, le
             matrici per la posizione degli oggetti e visualizzazione della camera in base alla sua posizione
@@ -222,9 +219,10 @@ void main() {
     gl_FragColor = texture2D(u_texture, v_texcoord) * vec4(u_diffuse.rgb * light, u_diffuse.a);
 }</code></pre>
         </div>
+        <br>
         <p>
-            Il secondo fragment e vertex shader si occupano di gestire l'environment e la texture applicata ad esso per
-            costruire lo skybox.
+            Il secondo fragment e vertex shader si occupano di gestire lo sky box,  questo è utilizzato per descrivere l'ambiente circostante al sistema solare.
+            Lo sky box consiste in un oggetto cubico al quale è stata applicata una texture per ricreare l'effetto di profondità dell'universo.
         </p>
         <div class="card">
             <pre class="card-body"><code>//SCRIPT id="skybox-vertex-shader" type="x-shader/x-vertex"
@@ -246,9 +244,10 @@ void main() {
 }
 </code></pre>
         </div>
+        <br>
         <p>
-            Nel main vengono chiamate le seguenti funzioni che permettono di istanziare delle costanti che contengono le
-            informazioni degli oggetti che verranno poi utilizzate da tutti gli oggetti e i nodi presenti nell'ambiente.
+            Nel main vengono chiamate le seguenti funzioni che permettono di istanziare delle costanti contenenti le
+            informazioni degli oggetti appartenenti alla scena. Questi valori verranno poi utilizzati da tutti gli elementi presenti nell'ambiente, essi in questo modo assumeranno le caratteristiche di spigoli e facce delle corrispondenti Mesh.
             Di preciso le funzioni fanno riferimento agli oggetti:
             <ul>
                 <li>Sphere: utilizzata per disegnare i pianeti</li>
@@ -263,10 +262,11 @@ const orbitBufferInfo = await getOrbitBufferInfo(gl);
 const ringBufferInfo = await getringBufferInfo(gl);
 const quadBufferInfo = primitives.createXYQuadBufferInfo(gl);</code></pre>
         </div>
-
-        <p>Per entrare nel dettaglio del meccanismo di assegnazione dai dati di tali oggetti ai rispettivi buffer e
-            quindi alla costruzione delle costanti mostriamo di seguito uno dei diversi <code>getBufferInfo()</code>,
-            in particolare quello della sfera:</p>
+        <br>
+        <p>Più nel dettaglio, le funzioni soprastanti servono ad ottenere i dati della mesh corrispondente all'oggetto 
+        che si intende disegnare e immagazzinare tali dati in un buffer. In questo caso osserviamo la funzione <code>getSphereBufferInfo(gl)</code> 
+        che disegna una sfera, tale funzione è infatti utilizzata per disegnare i pianeti e i satelliti.
+    </p>
         <div class="card">
             <pre class="card-body"><code>async function getSphereBufferInfo(gl) {
     const responseSphere = await fetch('../obj/sphere.obj');
@@ -275,21 +275,20 @@ const quadBufferInfo = primitives.createXYQuadBufferInfo(gl);</code></pre>
     return webglUtils.createBufferInfoFromArrays(gl, dataSphere);
 }</code></pre>
         </div>
-        <p>Viene utilizzata una funzione asincrona dal momento in cui le operazioni che vengono svolte vanno a
-            selezionare il file <code>sphere.obj</code> che descrive l'oggetto sfera creato ed esportato da Blender.
-            Questi dati vengono poi passati alla funzione di parsing che ne legge il contenuto e lo passa a sua volta
-            alla funzione <code>webglUtils.createBufferInfoFromArrays</code> della libreira webgl-utils.js che permette
-            di instanziare e assegnare i dati ai buffer in autonomia. In fine questi vengono poi restituiti alle
-            costanti sopra indicate come agglomerato di array.</p>
+        <br>
+        <p>Come prima cosa viene effettuata una chiamata asincrona per ottenere la mesh <code>sphere.obj</code>. Ogni mesh è stata progettata e disegnata su Blender appositamente per la realizzazione di questo progettto.
+            La funzione di parsing che legge il contenuto dei dati inerenti alla mesh e li passa a sua volta
+            alla funzione <code>webglUtils.createBufferInfoFromArrays</code> della libreira webgl-utils.js. Questa operazione permette
+            di instanziare e assegnare i dati al buffer in autonomia. Infine, il buffer viene restituito come agglomerato di array.</p>
         <br>
         <!-- PROGRAMS -->
         <h3 id="programs">Programs</h3>
-        <p>Nel main istanziamo i program GLSL per gli oggetti e per lo skybox usando la funzione
-            <code>createProgramInfo</code> della libreria webglUtils.js, queste funzioni si occupano di:
+        <p>Insieme alla creazione dei buffer degli oggetti, un'altra procedura di configurazione iniziare è quella di instanziare i programmi GLSL per gli oggetti e per lo skybox usando la funzione
+            <code>createProgramInfo</code> della libreria <code>webglUtils.js</code>, queste funzioni si occupano di:
             <ul>
-                <li>Crea tutti gli shader e i programmi e cerca le posizioni</li>
-                <li>Creare i buffer e caricare dati dei vertici</li>
-                <li>Creare le texture e caricare dati delle texture</li>
+                <li>Creare gli shader e i programmi e cercare le posizioni dei vertici</li>
+                <li>Creare i buffer e caricare i dati dei vertici</li>
+                <li>Creare le texture e caricare i dati delle texture</li>
             </ul>
         </p>
         <div class="card">
@@ -297,9 +296,10 @@ const quadBufferInfo = primitives.createXYQuadBufferInfo(gl);</code></pre>
                 class="card-body"><code>const programInfo = webglUtils.createProgramInfo(gl, ["vertex-shader-3d", "fragment-shader-3d"]);
 const skyboxProgramInfo = webglUtils.createProgramInfo(gl, ["skybox-vertex-shader", "skybox-fragment-shader"]);</code></pre>
         </div>
+        <p>Una volta effettuate le configurazioni iniziali dei program bisognerà poi utilizzarle a runtime per aggiornare la visualizzazione oggetti. 
+            In seguito venogno esposte delle operazioni svolte durante il rendering per disegnare gli oggetti nella loro posizione aggiornata.</p>
         <p>
-            Mentre al momento del rendering bisogna cancellare e impostare la finestra e gli altri stati globali
-            (abilitare Depth Test, etc..) e per ogni oggetto che si disegna:
+            Per ogni oggetto che si disegna è necessario:
             <ul>
                 <li>Chiamare <code>gl.useProgram</code> per dire al programma cosa disegnare</li>
                 <li>Gestire gli attributi di cosa si vuole disegnare</li>
@@ -307,10 +307,10 @@ const skyboxProgramInfo = webglUtils.createProgramInfo(gl, ["skybox-vertex-shade
                 <li>Chiamare <code>draw array</code></li>
             </ul>
 
-            In questo caso quindi per gestire lo skybox vengono eseguite le seguenti operazioni
+            Per la gestione dello skybox vengono eseguite le seguenti operazioni
         </p>
         <div class="card">
-            <pre class="card-body"><code>gl.depthFunc(gl.LEQUAL);
+            <pre class="card-body"><code>gl.depthFunc(gl.LEQUAL); //specifies a function that compares incoming pixel depth to the current depth buffer value
 gl.useProgram(skyboxProgramInfo.program);
 webglUtils.setBuffersAndAttributes(gl, skyboxProgramInfo, quadBufferInfo);
 webglUtils.setUniforms(skyboxProgramInfo, {
@@ -319,8 +319,9 @@ webglUtils.setUniforms(skyboxProgramInfo, {
 });
 webglUtils.drawBufferInfo(gl, quadBufferInfo);</code></pre>
         </div>
-        <p>Mentre per gli oggetti iteriamo sull'array che contiene tutti gli oggetti che devono essere disegnati nel
-            modo seguente</p>
+        <br>
+        <p>Per quanto riguarda gli oggetti del sistema all'interno dello skybox invece, viene sfruttato l'array <code> planets</code> per iterare sui singoli oggetti. <code>planets</code> contente gli oggetti che descrivono i pianeti e le orbite e verrà descrito nella prossima sezione.
+        <br> Per ogni oggetto vengono salvate le informazioni del programma e del buffer per poi impostare correttamente le uniforms, applicare le texture e disegnare tali oggetti.</p>
         <div class="card">
             <pre class="card-body"><code>var lastUsedProgramInfo = null;
 var lastUsedBufferInfo = null;
@@ -344,6 +345,7 @@ webglUtils.setUniforms(programInfo, object.drawInfo.uniforms);
 webglUtils.setUniforms(programInfo, sharedUniforms);
 gl.drawArrays(gl.TRIANGLES, 0, bufferInfo.numElements);</code></pre>
         </div>
+        <br>
         <p>
             In questo caso è stata fatta un'ottimizzazione: se il programma con cui si intende disegnare è lo
             stesso del programma precedente con cui abbiamo disegnato, non è necessario di chiamare
@@ -359,10 +361,21 @@ gl.drawArrays(gl.TRIANGLES, 0, bufferInfo.numElements);</code></pre>
         <img src="diagram/SolarSystemDiagram.jpg" alt="albero gerarchico dei nodi che compongono il sistema solare">
         <p>
             Per disegnare e muovere il sistema solare si è scelto di utilizzare un sistema ad albero, nello specifico
-            questo raccoglie diversi nodi, che possono essere orbite o pianeti.
-            [Nell'immagine soprastante le orbite sono rappresentate con degli ovali e le sfere con dei cerchi]
+            questo raccoglie diversi nodi, che possono essere orbite o pianeti. 
+            In questo contesto la parola "pianeti" viene utilizzata per fare riferimento a oggetti sferici, quindi non orbite.
+            Nello schema soprastante le orbite sono rappresentate con degli ovali e i pianeti con dei cerchi.
             <br>
-            I dati di ogni pianeta sono raccolti nell'array <code>planetsInfo</code> di oggetti nel seguente modo:
+            I dati di ogni pianeta sono raccolti nell'array di oggetti <code>planetsInfo</code>. Ogni oggetto contiene le seguenti informazioni:
+            <ul>
+                <li>Il nome del pianeta</li>
+                <li>La dimensione del pianeta - la scala del pianeta in base alla mesh <code>sphere.obj</code> utilizzata come unità di misura per la dimensione delle sfere</li>
+                <li>La distanza dal sole (o nel caso della Luna dalla Terra) - traslazione dal centro del sistema di disegno.</li>
+                <li>La velocità di rotazione dell'oggetto attorno alla sua orbita</li>
+                <li>La velocità di rotazione dell'oggetto sul prorio asse</li>
+                <li>La texture utilizzata</li>
+                <li>Il raggio dell'orbita</li>
+                <li>Le informazioni riguardanti l'oggetto che vengono visualizzate nella schermata quando l'utente decide di concentrare la visuale su tale oggetto.</li>
+            </ul>
         </p>
         <div class="card">
             <pre class="card-body"><code>const planetsInfo = [{
@@ -398,9 +411,9 @@ gl.drawArrays(gl.TRIANGLES, 0, bufferInfo.numElements);</code></pre>
 ]};
 </code></pre>
         </div>
-
+        <br>
         <p>
-            La costruzione della suddetta gerarchia avviente tramite la creazione e il collegamento di oggetti Node
+            La costruzione della gerarchia avviente tramite la creazione e il collegamento di oggetti <code>Node</code>
             descritti come segue:
         </p>
         <div class="card">
@@ -412,10 +425,11 @@ gl.drawArrays(gl.TRIANGLES, 0, bufferInfo.numElements);</code></pre>
 </code></pre>
         </div>
         <p>
-            Ogni oggetto del sistema diventa un nodo Node contenente le informazioni sui propri figli discendenti e le
-            matrici di world e local che permettono di disegnare l'oggetto in una corretta posizione nello spazio. <br>
+            Ogni oggetto del sistema è un nodo <code>Node</code> contenente le informazioni sui propri figli discendenti e le
+            matrici di visualizzazione world e local che permettono di disegnare l'oggetto nella sua corretta posizione nello spazio. <br>
+            <br>
             Viene quindi effettuata un'iterazione sull'array <code>planetsInfo</code> per la creazione e il riempimento dei
-            nodi Node con i dati specificati. Questi dati fanno in modo che ogni oggetto assuma la dimensione, la
+            nodi <code>Node</code> con i dati specificati. Questi dati fanno in modo che ogni oggetto assuma la dimensione, la
             posizione e la velocità di rotazione adeguata attorno a un asse specifica. Nello specifico le operazioni che
             vengono svolte sono:
             <ul>
@@ -431,7 +445,7 @@ gl.drawArrays(gl.TRIANGLES, 0, bufferInfo.numElements);</code></pre>
                 <li>Viene assegnato il programma e il buffer per disegnare l'oggetto, entrambi vengono passati per
                     parametro</li>
                 <li>Viene utilizzata la funzione <code>setParent</code> per assegnare il genitore nell'albero gerarchico
-                    <br>[Nota: Dove ogni orbita ruota attorno all'orbita del sole, ovvero solarSystemNode passato per
+                    <br>[Nota: Dove ogni orbita ruota attorno all'orbita del Sole, ovvero solarSystemNode passato per
                     parametro]</li>
                 <li>Viene assegnata come genitore della sfera la propria orbita</li>
                 <li>Viene raccolto l'oggetto node della sfera nel vettore planets passato per parametro (questo
@@ -440,9 +454,8 @@ gl.drawArrays(gl.TRIANGLES, 0, bufferInfo.numElements);</code></pre>
                     tutti i nodi di tipo orbita)</li>
             </ul>
 
-            Viene fatta eccezione per il pianeta Terra perché è necessario specificare che la Luna ruota attorno all'orbita
-            della Terra e per il pianeta Saturno perché è necessario specificare che gli anelli di Saturno ruotano attorno
-            all'orbita di Saturno.
+            Viene fatta eccezione per due casi:pianeta Terra è padre e centro del sistema Luna, che ruota attorno alla sua orbita; 
+            la stessa cosa accade per il pianeta Saturno che diventa padre dei suoi anelli.
         </p>
         <div class="card">
             <pre class="card-body"><code>function createOrbit(info, planets, orbits, programInfo, sphereBufferInfo, 
@@ -473,11 +486,13 @@ ringBufferInfo, solarSystemNode) {
   }
 }</code></pre>
         </div>
+        <br>
         <p>È necessario chiarire che le orbite trattate fino ad ora sono degli oggetti fittizi creati con il
             solo scopo di posizionare correttamente i pianeti e di farli roteare lungo, per l'appunto, un'orbita. In
             realtà queste entità non hanno niente a che fare con i cerchi gialli: questi infatti, sono chiaramente
-            visibili dal momento in cui hanno effettivamente una propria texture e posizione nel vettore planets che
-            verrà poi disegnato in fase di rendering. Il meccanismo per la loro gestione è simile a quello descritto in
+            visibili dal momento in cui sono degli oggetti che hanno una propria struttura, texture.
+            Gli oggetti sfera e gli oggetti orbita sono contenuti nel vettore <code>planets</code>, i quali oggetti al suo interno verranno
+            disegnati in fase di rendering. Il meccanismo per la loro gestione è simile a quello descritto in
             precedenza:</p>
         <div class="card">
             <pre class="card-body"><code>function setOrbits(programInfo, orbitBufferInfo, solarSystemNode) {
@@ -499,9 +514,9 @@ ringBufferInfo, solarSystemNode) {
     return orbitList;
 }</code></pre>
         </div>
-        <p>Viene mostrato come le due funzioni precedenti funzionino per conferire le corrette proprietà a tutti gli oggetti
-            per poter funzionare. <br> Il vettore planets e orbits vengono in seguito uniti per diventare l'array
-            definitivo che contiene gli oggetti da disegnare.</p>
+        <br>
+        <p>La conbinazione delle due funzioni precedenti permettono di avere un albero geerarchico di tutti i nodi, sia pianeti 
+            che orbite vengono poi accodati alla lista <code>planets</code>.</p>
         <div class="card">
             <pre class="card-body"><code>const solarSystemNode = new Node();
 createSolarSystem(planets, orbits, programInfo, sphereBufferInfo, ringBufferInfo, solarSystemNode);
@@ -512,15 +527,13 @@ planets = planets.concat(orbitsCircle);</code></pre>
         <br>
         <!-- TEXTURE -->
         <h3 id="texture">Texture</h3>
-        <p>In questo applicativo bisogna specificare come si svolge l'applicazione di due tipi di texture, quella per lo
-            skybox e quella per tutti gli altri tipi di oggetti. Per quanto concerne il secondo caso, è già stata usata
-            la
-            funzione <code>createTexture</code>, viene mostrato nel codice seguente le sue specifiche.
-            Quello che accade è che viene creata una nuova texture e caricata un'immagine il cui path è passato come
-            parametro, in fase di loading questa immagine 2D viene poi applicata (in fase di bind) alla texture come un
+        <p>In questo applicativo le texture vengono applicate secondo due metodi, nel primo caso si vuole applicare la texture allo
+            skybox, con il secondo, invece, quelle per tutti gli altri tipi di oggetti. Per quanto concerne quest'ultimo, è già stata usata
+            la funzione <code>createTexture</code>, viene mostrato nel codice seguente le sue specifiche. <br>
+            Dato un percorso <code>path</code> a un'immagine, viene creata una nuova texture e in fase di loading questa immagine 2D viene poi applicata (in fase di bind) alla texture come un
             oggetto in modo da avvolgerlo (wrapping). <br>
-            Viene inoltre effettuato un controllo per verificare che l'altezza e la larghezza siano di dimensioni una potenza di 2. In caso contrario
-            2, se così non fosse vengono generati dei mipmap adatti.</p>
+            Viene inoltre effettuato un controllo per verificare che l'altezza e la larghezza abbiano dimensioni di una potenza di 2. 
+            In caso contrario, vengono generati Mipmap adatti della potenza di 2 e di diverse dimensioni, viene poi scelto il più adatto a ricoprire la superficie.</p>
         <div class="card">
             <pre class="card-body"><code>function createTexture(path) {
 var texture = gl.createTexture();
@@ -543,9 +556,10 @@ image.addEventListener('load', function () {
 return texture;
 }</code></pre>
         </div>
-        <p>Inoltre, per realizzare lo skybox viene sfruttata una funzione specifica, 
-            in quanto si tratta di un wrap dell'immagine su un cubo. Quest'ultima viene infatti caricata come Texture cube map e non Texture
-            2D.
+        <br>
+        <p>Per realizzare lo skybox viene sfruttata un'altra modalità per applicare la texture. 
+            In quanto si tratta di un cubo si è deciso di caricare la texture come 
+            <code> Texture cube map</code> e quindi applicare la stessa immagine a ogni faccia del cubo.
         </p>
         <div class="card">
             <pre class="card-body"><code>function createSkyboxTexture() {
@@ -578,24 +592,20 @@ return texture;
         <br>
         <!-- CONTROLLI -->
         <h3 id="controlli">Controlli</h3>
-        <p>I controlli sono accessibili solo tramite una tastiera, quindi sono esclusi per dispositivi mobile e
-            riguardano
-            mouse e tasitera. Tali funzionalità sono già state illustrate nella sezione "Utilizzo e funzionalità utente" mentre la
-            sezione attuale ha lo scopo di mostrare la loro implementazione.<br>
-            Il primo step è quello di dichiarare l'oggetto <code>controls</code> che contiene le informazioni riguardanti la
-            posizione della camera sugli assi e la velocità di rotazione degli oggetti, mentre le informzioni che
-            riguardano l'angolazione della camera rispetto al centro e la distanzia della stessa da un punto di
-            osservazione
-            centrale sono descritti dentro l'oggetto GUI. <br>
-            Per gestire le operazioni del mouse vengono utilizzati degli Event Handler che richiamano le 
-            funzioni riportate di seguito.
-            Il movimento della camera tramite mouse viene svolto dalla funzione <code>mouseMove</code> che calcola la
-            nuova
-            ancgolazione della camera basandosi sulla distanza sugli assi tra la vecchia e la nuova posizione della
-            stessa.
-            Inoltre, per quanto riguarda lo "zoom" viene modificata la variabile D in base alla persistenza e alla
-            direzione
-            di movimento della rotella centrale del mouse.
+        <p>I controlli permettono di sfruttare le periferiche di mouse e tastiera per interagire con il sistema solare.
+            I comandi di movimento della visuale e di rotazione attorno a un oggetto sono accessibili da ogni dispositivo tramite lo spostamento del mouse o del tocco touch, mentre i comandi da tastiera non sono accessibili da mobile.
+            <br>
+            L'oggetto <code>controls</code>, esso contiene le informazioni riguardanti la
+            posizione della camera sugli assi e la velocità di rotazione degli oggetti. 
+            Le informzioni che riguardano l'angolazione di osservazione rispetto al centro e la distanzia da un punto di
+            osservazione centrale sono descritti dentro l'oggetto <code>GUI</code>. <br>
+            Per gestire le operazioni del mouse vengono utilizzati degli <code>Event Handler</code>. 
+            Questi richiamano le funzioni descritte nel prossimo blocco di codice ogni qual volta che accade un evento come il movimento del mouse o il cambiamento di posizione della rotella del mouse.
+            <br>
+            Il movimento della camera tramite mouse viene svolto dalla funzione <code>mouseMove</code> che basandosi sulla distanza delle posizione sugli assi della nuova posizione della
+            meno la vecchia posizione ha modo di scoprire di quanti gradi la visualizzazione è stata alterata. 
+            Lo "zoom" viene modificat al variare della variabile D in base alla
+            direzione di movimento della rotella centrale del mouse.
         </p>
         <div class="card">
             <pre class="card-body"><code>var controls = {
@@ -631,8 +641,8 @@ var wheelZoom = function (event) {
         </div>
         <p>Per ciò che concerne la tastiera, questa viene utilizzata una funzione di controllo dei tasti: in base al tasto
             rilasciato
-            vengono svolte le operazioni note, ovvero il tasto c permette di fermare la rotazione, mentre i
-            tasti x e z controllano l'aumento e la riduzione della velocità.</p>
+            vengono svolte le operazioni note, ovvero il tasto [c] permette di fermare la rotazione, mentre i
+            tasti [x] e [z] controllano l'aumento e la riduzione della velocità.</p>
         <div class="card">
             <pre class="card-body"><code>function doKeyUp(e) {
     ////tasto C per fermare la rotazione 
@@ -649,16 +659,13 @@ var wheelZoom = function (event) {
         <br>
         <!-- GUI -->
         <h3 id="gui">GUI</h3>
-        <p>L'interfaccia grafica utente è presente in tutti i dispositivi e, come mostrato nella sezione "Utilizzo e
-            funzionalità utente", permette di roteare la camera attorno all'oggetto sulla quale abbiamo il focus.
-            La sua implementazione è molto semplice: consiste nell'integrazione della componente gui della libreria
-            <code>dat.gui.js</code> che
-            gestisce gli slider per cambiare l'angolazione della camera sugli assi e la velocità di rotazione. Gestisce
-            inoltre la tendina
-            degli oggetti attorno alla quale è possibile la rotazione. Una volta aggiornati, i valori vengono copiati
-            nell'oggetto GUI che viene poi utilizzato per gestire la camera (cameraMatrix) e la sua posizione, come
-            viene
-            mostrato nella sezione successiva.</p>
+        <p>I controlli della GUI, presenti in tutti i dispositivi, permettono di modificare con più precisione la posizizione e angolazione di visualizzazione 
+            sulle assi X, Y e Z. La GUI permette inoltre di selezionare un oggetto di osservazione (che si troverà al centro della visuale), 
+            modificare la distanza da esso e scegliere la velocità di rotazione dei pianeti, lasciando però invariate le proporzioni di velocità inalterate.
+            <br>
+            L'implementazione della GUI consiste nell'integrazione della componente gui della libreria
+            <code>dat.gui.js</code>. Questa gestisce gli slider utilizzati per cambiare l'angolazione della camera sugli assi e la velocità di rotazione e la tendina di scelta degli oggetti.
+            Una volta aggiornati, i valori vengono copiati nell'oggetto GUI che viene poi utilizzato per gestire la camera (<code>cameraMatrix</code>) e la sua posizione, come viene mostrato nel blocco di codice successivo.</p>
         <div class="card">
             <pre class="card-body"><code>var GUI = {
     D: 700,
@@ -706,23 +713,22 @@ function setValue() {
         <br>
         <!-- Camera -->
         <h3 id="camera">Camera</h3>
-        <p>È già stato specificato nelle sezioni precedenti come muovere, ruotare o avvicinare la camera attorno a un
+        <p>Nella sezione "Comandi" e "GUI" sono state mostrate le modalità con la quale muovere, ruotare o avvicinare la camera attorno a un
             oggetto. Lo scopo di questa sezione è quella di spiegare nel dettaglio come i valori modificati precedente vengono utilizzati per i
-            loro
-            scopi.<br>
+            loro scopi.<br>
             Nel codice sottostante:
             <ul>
                 <li>Viene presa la posizione dell'oggetto che si vuole osservare - ovvero quello selezionato nel menù a
                     tendina</li>
-                <li>Viene crerata una camera matrix e viene posizionata nello stesso punto dell'oggetto che si vuole
+                <li>Viene crerata una <code>cameraMatrix</code> che viene posizionata nello stesso punto dell'oggetto che si vuole
                     osservare</li>
                 <li>Si rotea la camera attorno al centro in base alle varibiali impostate nell'oggetto <code>GUI</code>
                 </li>
                 <li>Si allontana la camera con distanza D</li>
-                <li>viene creata la view matrix e la view projection matrix</li>
+                <li>Viene creata la <code>viewMatrix</code>e la <code>viewProjectionMatrix</code> che permettono di posizionare la camera, la sua angolazione di visualizzazione nel modo giusto.</li>
             </ul>
 
-            In seguito, viene creata la view direction matrix e la sua inversa, utili per calcolare la visuale per lo
+            In seguito, viene creata la <code>viewDirectionMatrix</code> e la sua inversa, utili per calcolare la visuale per lo
             skybox.
         </p>
         <div class="card">
@@ -756,25 +762,25 @@ var viewDirectionProjectionInverseMatrix = m4.inverse(viewDirectionProjectionMat
         <!-- Librerie -->
         <h3 id="librerie">Librerie</h3>
         <p>Per l'implementazione di questo applicativo sono state usate diverse librerie, alcune importate, altre create
-            appositamente. Le librerie utilizzate sono indicate nel seguente elenco che ne indica gli scopi. <br>
+            appositamente. Le librerie utilizzate sono indicate nel seguente elenco che ne elenca gli scopi. <br>
             Librerie importate:
             <ul>
-                <li>dat.gui.js: libreria per disegnare l'interfaccia utente di controllo della camera, velocità di
+                <li><code>dat.gui.js</code>: libreria per disegnare l'interfaccia utente di controllo della camera, velocità di
                     rotazione
                     dei pianeti e selezione dell'oggetto da osservare</li>
-                <li>m4.js: libreria per gestire le matrici</li>
-                <li>primitives.js: libreria per la creazione e gesitione di oggetti ptimitivi, in questo caso usato per
+                <li><code>m4.js</code>: libreria per gestire le matrici</li>
+                <li><code>primitives.js</code>: libreria per la creazione e gesitione di oggetti ptimitivi, in questo caso usato per
                     la
                     crezione dello skybox e i buffer dedicati</li>
-                <li>webgl-utils.js: libreria per la gestione di oggetti e programmi WEBGL</li>
+                <li><code>webgl-utils.js</code>: libreria per la gestione di oggetti e programmi WEBGL</li>
             </ul>
             Librerie ad hoc:
             <ul>
-                <li>controls.js: libreria utilizzata per la gestione degli eventi del mouse e della tastiera</li>
-                <li>gui.js: libreria utilizzata per la gestione dell'interfaccia grafica utente</li>
-                <li>node.js: libreria per la creazione e gestione dei nodi del sistema solare</li>
-                <li>texture.js: libreria per la gestione e applicazione delle texture e utilizzo dei file .obj</li>
-                <li>utils.js: libreria per le funzionalità utili inerenti a conversioni matematiche</li>
+                <li><code>controls.js</code>: libreria utilizzata per la gestione degli eventi del mouse e della tastiera</li>
+                <li><code>gui.js</code>: libreria utilizzata per la gestione dell'interfaccia grafica utente</li>
+                <li><code>node.js</code>: libreria per la creazione e gestione dei nodi del sistema solare</li>
+                <li><code>texture.js</code>: libreria per la gestione e applicazione delle texture e utilizzo dei file .obj</li>
+                <li><code>utils.js</code>: libreria per le funzionalità utili inerenti a conversioni matematiche</li>
             </ul>
         </p>
 
@@ -802,7 +808,7 @@ var viewDirectionProjectionInverseMatrix = m4.inverse(viewDirectionProjectionMat
             <tr>
                 <th>Pianeta</th>
                 <th>Raggio <br>(mila km)</th>
-                <th>Distanza dal sole <br>(mila km)</th>
+                <th>Distanza dal Sole <br>(mila km)</th>
                 <th>Distzanza centri <br>(mila km)</th>
                 <th>Orbite dimensioni <br>(dimensione fittizia)</th>
                 <th>Velocità rivoluzione <br>(mila km/s)</th>
